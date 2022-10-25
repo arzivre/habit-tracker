@@ -22,49 +22,36 @@ model Example {
 }
 
 model DemoHabit {
-  id      String       @id @default(cuid())
-  records DemoRecord[]
+  id       String       @id @default(cuid())
+  filterId String
+  title    String
+  records  DemoRecord[]
 }
 
 model DemoRecord {
-  id       String        @id @default(cuid())
-  Demo     DemoHabit?    @relation(fields: [demoId], references: [id])
-  demoId   String?
-  month    DateTime
-  title    String
-  trackers DemoTracker[]
-}
-
-model DemoTracker {
-  id           String      @id @default(cuid())
-  DemoRecord   DemoRecord? @relation(fields: [demoRecordId], references: [id])
-  demoRecordId String?
-  date         DateTime
-  value        String
+  id          String     @id @default(cuid())
+  Demo        DemoHabit? @relation(fields: [demoHabitId], references: [id])
+  demoHabitId String?
+  month       String
+  date        DateTime   @default(now())
+  value       String
 }
 
 model Habit {
   id      String   @id @default(cuid())
   User    User?    @relation(fields: [userId], references: [id])
   userId  String?
-  title    String
+  title   String
   records Record[]
 }
 
 model Record {
-  id       String    @id @default(cuid())
-  Habit    Habit?    @relation(fields: [habitId], references: [id])
-  habitId  String?
-  month    DateTime
-  trackers Tracker[]
-}
-
-model Tracker {
-  id       String   @id @default(cuid())
-  date     DateTime
-  value    String
-  Record   Record?  @relation(fields: [recordId], references: [id])
-  recordId String?
+  id      String   @id @default(cuid())
+  Habit   Habit?   @relation(fields: [habitId], references: [id])
+  habitId String?
+  month   String
+  date    DateTime @default(now())
+  value   String
 }
 
 // Necessary for Next auth
