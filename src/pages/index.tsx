@@ -1,3 +1,4 @@
+import { DemoRecord } from "@prisma/client";
 import {
   add,
   eachDayOfInterval,
@@ -8,445 +9,30 @@ import {
   startOfToday,
 } from "date-fns";
 import { useState } from "react";
+import { trpc } from "../utils/trpc";
 
-export interface DemoProps {
-  id: string;
-  name: string;
-  habits: Habit[];
+function gridOfTheMonth() {
+  const currentEndOfTheMonth = format(endOfMonth(new Date()), "d");
+ if (currentEndOfTheMonth === "28") {
+   return "grid-cols-28";
+ }
+ if (currentEndOfTheMonth === "29") {
+   return "grid-cols-29";
+ }
+ if (currentEndOfTheMonth === "30") {
+   return "grid-cols-30";
+ }
+ return "grid-cols-31";
 }
-
-export interface Habit {
-  id: string;
-  habit: string;
-  records: Record[];
-}
-
-export interface Record {
-  date: string;
-  values: string;
-}
-
-const DEMO: DemoProps = {
-  id: "2022-10",
-  name: "Demo",
-  habits: [
-    {
-      id: "1",
-      habit: "Make the Bed",
-      records: [
-        {
-          date: "2022-10-1",
-          values: "1",
-        },
-        {
-          date: "2022-10-2",
-          values: "0",
-        },
-        {
-          date: "2022-10-3",
-          values: "1",
-        },
-        {
-          date: "2022-10-4",
-          values: "0",
-        },
-        {
-          date: "2022-10-5",
-          values: "1",
-        },
-        {
-          date: "2022-10-6",
-          values: "1",
-        },
-        {
-          date: "2022-10-7",
-          values: "0",
-        },
-        {
-          date: "2022-10-8",
-          values: "1",
-        },
-        {
-          date: "2022-10-9",
-          values: "1",
-        },
-        {
-          date: "2022-10-10",
-          values: "",
-        },
-        {
-          date: "2022-10-11",
-          values: "1",
-        },
-        {
-          date: "2022-10-12",
-          values: "1",
-        },
-        {
-          date: "2022-10-13",
-          values: "",
-        },
-        {
-          date: "2022-10-14",
-          values: "1",
-        },
-        {
-          date: "2022-10-15",
-          values: "1",
-        },
-        {
-          date: "2022-10-16",
-          values: "1",
-        },
-        {
-          date: "2022-10-17",
-          values: "",
-        },
-        {
-          date: "2022-10-18",
-          values: "1",
-        },
-        {
-          date: "2022-10-19",
-          values: "1",
-        },
-        {
-          date: "2022-10-20",
-          values: "1",
-        },
-        {
-          date: "2022-10-21",
-          values: "1",
-        },
-        {
-          date: "2022-10-22",
-          values: "",
-        },
-        {
-          date: "2022-10-23",
-          values: "1",
-        },
-        {
-          date: "2022-10-24",
-          values: "1",
-        },
-      ],
-    },
-    {
-      id: "2",
-      habit: "Meditate",
-      records: [
-        {
-          date: "2022-10-1",
-          values: "1",
-        },
-        {
-          date: "2022-10-2",
-          values: "0",
-        },
-        {
-          date: "2022-10-3",
-          values: "1",
-        },
-        {
-          date: "2022-10-4",
-          values: "1",
-        },
-        {
-          date: "2022-10-5",
-          values: "1",
-        },
-        {
-          date: "2022-10-6",
-          values: "0",
-        },
-        {
-          date: "2022-10-7",
-          values: "0",
-        },
-        {
-          date: "2022-10-8",
-          values: "1",
-        },
-        {
-          date: "2022-10-9",
-          values: "1",
-        },
-        {
-          date: "2022-10-10",
-          values: "1",
-        },
-        {
-          date: "2022-10-11",
-          values: "0",
-        },
-        {
-          date: "2022-10-12",
-          values: "1",
-        },
-        {
-          date: "2022-10-13",
-          values: "1",
-        },
-        {
-          date: "2022-10-14",
-          values: "1",
-        },
-        {
-          date: "2022-10-15",
-          values: "1",
-        },
-        {
-          date: "2022-10-16",
-          values: "1",
-        },
-        {
-          date: "2022-10-17",
-          values: "1",
-        },
-        {
-          date: "2022-10-18",
-          values: "1",
-        },
-        {
-          date: "2022-10-19",
-          values: "1",
-        },
-        {
-          date: "2022-10-20",
-          values: "1",
-        },
-        {
-          date: "2022-10-21",
-          values: "1",
-        },
-        {
-          date: "2022-10-22",
-          values: "1",
-        },
-        {
-          date: "2022-10-23",
-          values: "1",
-        },
-        {
-          date: "2022-10-24",
-          values: "1",
-        },
-      ],
-    },
-    {
-      id: "3",
-      habit: "Morning Exercise",
-      records: [
-        {
-          date: "2022-10-1",
-          values: "1",
-        },
-        {
-          date: "2022-10-2",
-          values: "0",
-        },
-        {
-          date: "2022-10-3",
-          values: "1",
-        },
-        {
-          date: "2022-10-4",
-          values: "1",
-        },
-        {
-          date: "2022-10-5",
-          values: "1",
-        },
-        {
-          date: "2022-10-6",
-          values: "1",
-        },
-        {
-          date: "2022-10-7",
-          values: "0",
-        },
-        {
-          date: "2022-10-8",
-          values: "1",
-        },
-        {
-          date: "2022-10-9",
-          values: "1",
-        },
-        {
-          date: "2022-10-10",
-          values: "1",
-        },
-        {
-          date: "2022-10-11",
-          values: "1",
-        },
-        {
-          date: "2022-10-12",
-          values: "1",
-        },
-        {
-          date: "2022-10-13",
-          values: "1",
-        },
-        {
-          date: "2022-10-14",
-          values: "1",
-        },
-        {
-          date: "2022-10-15",
-          values: "1",
-        },
-        {
-          date: "2022-10-16",
-          values: "1",
-        },
-        {
-          date: "2022-10-17",
-          values: "1",
-        },
-        {
-          date: "2022-10-18",
-          values: "1",
-        },
-        {
-          date: "2022-10-19",
-          values: "1",
-        },
-        {
-          date: "2022-10-20",
-          values: "1",
-        },
-        {
-          date: "2022-10-21",
-          values: "1",
-        },
-        {
-          date: "2022-10-22",
-          values: "1",
-        },
-        {
-          date: "2022-10-23",
-          values: "1",
-        },
-        {
-          date: "2022-10-24",
-          values: "1",
-        },
-      ],
-    },
-    {
-      id: "4",
-      habit: "Read a Book",
-      records: [
-        {
-          date: "2022-10-1",
-          values: "1",
-        },
-        {
-          date: "2022-10-2",
-          values: "0",
-        },
-        {
-          date: "2022-10-3",
-          values: "1",
-        },
-        {
-          date: "2022-10-4",
-          values: "1",
-        },
-        {
-          date: "2022-10-5",
-          values: "1",
-        },
-        {
-          date: "2022-10-6",
-          values: "1",
-        },
-        {
-          date: "2022-10-7",
-          values: "0",
-        },
-        {
-          date: "2022-10-8",
-          values: "1",
-        },
-        {
-          date: "2022-10-9",
-          values: "1",
-        },
-        {
-          date: "2022-10-10",
-          values: "1",
-        },
-        {
-          date: "2022-10-11",
-          values: "1",
-        },
-        {
-          date: "2022-10-12",
-          values: "1",
-        },
-        {
-          date: "2022-10-13",
-          values: "1",
-        },
-        {
-          date: "2022-10-14",
-          values: "1",
-        },
-        {
-          date: "2022-10-15",
-          values: "1",
-        },
-        {
-          date: "2022-10-16",
-          values: "1",
-        },
-        {
-          date: "2022-10-17",
-          values: "1",
-        },
-        {
-          date: "2022-10-18",
-          values: "1",
-        },
-        {
-          date: "2022-10-19",
-          values: "1",
-        },
-        {
-          date: "2022-10-20",
-          values: "1",
-        },
-        {
-          date: "2022-10-21",
-          values: "1",
-        },
-        {
-          date: "2022-10-22",
-          values: "1",
-        },
-        {
-          date: "2022-10-23",
-          values: "1",
-        },
-        {
-          date: "2022-10-24",
-          values: "1",
-        },
-      ],
-    },
-  ],
-};
 
 const Home = () => {
   const today = startOfToday();
-  const [selectedDay, setSelectedDay] = useState(today);
-  const [currentMonth, setCurrentMonth] = useState(format(today, "MMM-yyyy"));
+  const habits = trpc.demo.getDemoHabits.useQuery();
 
-  const firstDayCurrentMonth = parse(currentMonth, "MMM-yyyy", new Date());
+  // const [selectedDay, setSelectedDay] = useState(today);
+  const [currentMonth, setCurrentMonth] = useState(format(today, "MMMM-yyyy"));
+
+  const firstDayCurrentMonth = parse(currentMonth, "MMMM-yyyy", new Date());
 
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
@@ -455,27 +41,12 @@ const Home = () => {
 
   function previousMonth() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
-    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
+    setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
   function nextMonth() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
-    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
-  }
-
-  function gridOfTheMonth() {
-    const currentEndOfTheMonth = format(endOfMonth(firstDayCurrentMonth), "d");
-
-    if (currentEndOfTheMonth === "28") {
-      return "grid-cols-28";
-    }
-    if (currentEndOfTheMonth === "29") {
-      return "grid-cols-29";
-    }
-    if (currentEndOfTheMonth === "30") {
-      return "grid-cols-30";
-    }
-    return "grid-cols-31";
+    setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
   return (
@@ -485,9 +56,9 @@ const Home = () => {
       </header>
 
       <main className="grid grid-cols-[300px_auto] border-b-2 border-b-black">
-        <section className="flex w-[20vw] items-center justify-start align-middle">
+        <div className="flex w-[20vw] items-center justify-start align-middle">
           <h2 className="text-3xl">Habits</h2>
-        </section>
+        </div>
         <section>
           <div className="flex gap-8 font-semibold text-gray-900">
             <button onClick={previousMonth}>{"<"}</button>
@@ -513,24 +84,79 @@ const Home = () => {
 
       <article className="grid grid-cols-[300px_auto]">
         <ul className="">
-          {DEMO.habits.map(({ habit }) => (
-            <li key={habit}>{habit}</li>
+          {habits.data?.map(({ title, id }) => (
+            <li key={id}>{title}</li>
           ))}
         </ul>
         <section>
-          {DEMO.habits.map((habit, index) => (
-            <ol key={habit.id} className={`grid ${gridOfTheMonth()}`}>
-              {DEMO.habits[index]?.records.map(({ date, values }) => (
-                <li key={date.toString()} className={`mx-auto`}>
-                  <p>{values === "1" ? "✔" : " "}</p>
-                </li>
-              ))}
-            </ol>
+          {habits.data?.map(({ id }) => (
+            <HabitRecords key={id} habitId={id} month={currentMonth} />
           ))}
         </section>
       </article>
     </div>
   );
+};
+
+interface HabitRecordsProps {
+  habitId: string;
+  month: string;
+}
+const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
+  const records = trpc.demo.getDemoRecords.useQuery({
+    month,
+    habitId,
+  });
+
+  const firstDayCurrentMonth = parse(month, "MMMM-yyyy", new Date());
+
+  const days = eachDayOfInterval({
+    start: firstDayCurrentMonth,
+    end: endOfMonth(firstDayCurrentMonth),
+  });
+
+  // TODO:
+  // create variable from loop a records data
+  // compare withs days or filter
+  // iif filter is true then render data
+  // if filter false render skeleton
+  // take the result to prints conditionaly
+
+  // alternative
+  // write for loop if data exist push data
+  // if data not exist push skeleton
+ 
+  const component = records.data?.map(({ id, value,date }: DemoRecord, index) => (
+    <li key={id}>
+      <p>{value === "1" ? "✔" : " "}</p>
+      <p>
+        {date.toString()}
+      </p>
+      <p>
+        {index}
+      </p>
+    </li>
+  ));
+
+  if (records.data?.length === 0) {
+    return (
+      <ol className={`grid ${gridOfTheMonth()}`}>
+        {days.map((day) => (
+          <li key={day.toString()}>
+            <p className="border">
+              <div className="opacity-0">
+                <time dateTime={format(day, "yyyy-MM-dd")}>
+                  {format(day, "d")}
+                </time>
+              </div>
+            </p>
+          </li>
+        ))}
+      </ol>
+    );
+  }
+
+  return <ol className={` flex border`}>{component}</ol>;
 };
 
 export default Home;
