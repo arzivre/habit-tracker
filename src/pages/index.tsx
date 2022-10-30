@@ -1,3 +1,4 @@
+import type { DemoRecord } from "@prisma/client";
 import {
   add,
   eachDayOfInterval,
@@ -5,7 +6,8 @@ import {
   format,
   isToday,
   parse,
-  startOfToday
+  startOfToday,
+  getDate,
 } from "date-fns";
 import { Suspense, useState } from "react";
 import { trpc } from "../utils/trpc";
@@ -53,7 +55,6 @@ const Home = () => {
       <header className="flex w-full justify-start">
         <h1 className="text-4xl">Habit Tracker</h1>
       </header>
-
       <main className="grid grid-cols-[300px_auto] border-b-2 border-b-black">
         <div className="flex w-[20vw] items-center justify-start align-middle">
           <h2 className="text-3xl">Habits</h2>
@@ -70,7 +71,7 @@ const Home = () => {
             {days.map((day) => (
               <li
                 key={day.toString()}
-                className={`${isToday(day) && "bg-gray-500"} mx-auto`}
+                className={`${isToday(day) && "bg-gray-500"} m-0.5 text-center`}
               >
                 <time dateTime={format(day, "yyyy-MM-dd")}>
                   {format(day, "d")}
@@ -80,7 +81,6 @@ const Home = () => {
           </ol>
         </section>
       </main>
-
       <article className="grid grid-cols-[300px_auto]">
         <ul className="">
           {habits.data?.map(({ title, id }) => (
@@ -101,43 +101,44 @@ interface HabitRecordsProps {
   habitId: string;
   month: string;
 }
-interface newRecordProps {
-  id: string;
-  date: string;
-  value: string;
-  habitId: string;
-}
 const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
-  const { data, isFetching } = trpc.demo.getDemoRecords.useQuery({
+  const { data: records, isFetching } = trpc.demo.getDemoRecords.useQuery({
     month,
     habitId,
   });
 
-  const firstDayCurrentMonth = parse(month, "MMMM-yyyy", new Date());
+  const firstDayCurrentMonth = parse(
+    format(startOfToday(), "MMMM-yyyy"),
+    "MMMM-yyyy",
+    new Date()
+  );
 
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
     end: endOfMonth(firstDayCurrentMonth),
   });
 
-  const newRecord: newRecordProps[] = [];
+  const newRecord: DemoRecord[] = [];
+
   for (let index = 0; index < days.length; index++) {
-    const objIndex = data?.findIndex(
+    const objIndex = records?.findIndex(
       (obj: { date: string }) => Number(obj.date) === index + 1
     );
     if (objIndex !== -1) {
       newRecord.push({
-        id: data?.[objIndex as number]?.id as string,
-        date: data?.[objIndex as number]?.date as string,
-        value: data?.[objIndex as number]?.value as string,
-        habitId,
+        id: records?.[objIndex as number]?.id as string,
+        month,
+        date: records?.[objIndex as number]?.date as string,
+        value: records?.[objIndex as number]?.value as string,
+        demoHabitId: habitId,
       });
     } else {
       newRecord.push({
         id: `${index + 1}`,
+        month,
         date: format(days[index] as Date, "d"),
         value: " ",
-        habitId,
+        demoHabitId: habitId,
       });
     }
   }
@@ -146,30 +147,36 @@ const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
     return <p>Loading...</p>;
   }
 
-  if (data?.length === 0) {
+  if (records?.length === 0) {
     return (
       <ol className={`grid ${gridOfTheMonth()}`}>
         {days.map((day) => (
-          <li key={day.toString()}>
-            <div className="border">
-              <p className="opacity-0">x</p>
-            </div>
+          <li
+            key={day.toString()}
+            className={`${isToday(day) && "bg-gray-500"} border`}
+          >
+            <p className=" opacity-0">x</p>
           </li>
         ))}
       </ol>
     );
   }
 
-  const component = newRecord?.map(({ value }, index) => (
-    <li key={index}>
-      <p className="border-x">
-        {value === "1" ? "✔" : <span className="opacity-0">x</span>}
+  const component = newRecord?.map(({ value, date }, index) => (
+    <li
+      key={date}
+      className={`${
+        isToday(days?.[index] as Date) && "bg-gray-500"
+      } text-center`}
+    >
+      <p className="border">
+        {value === "1" ? "✔" : <span className="opacity-0">{date}</span>}
       </p>
     </li>
   ));
 
   return (
-    <ol className={`grid ${gridOfTheMonth()} border-y`}>
+    <ol className={`grid ${gridOfTheMonth()} `}>
       <Suspense fallback={<p>Loading</p>}>{component}</Suspense>
     </ol>
   );
