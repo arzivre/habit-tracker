@@ -1,4 +1,3 @@
-import { DemoRecord } from "@prisma/client";
 import {
   add,
   eachDayOfInterval,
@@ -6,23 +5,23 @@ import {
   format,
   isToday,
   parse,
-  startOfToday,
+  startOfToday
 } from "date-fns";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { trpc } from "../utils/trpc";
 
 function gridOfTheMonth() {
   const currentEndOfTheMonth = format(endOfMonth(new Date()), "d");
- if (currentEndOfTheMonth === "28") {
-   return "grid-cols-28";
- }
- if (currentEndOfTheMonth === "29") {
-   return "grid-cols-29";
- }
- if (currentEndOfTheMonth === "30") {
-   return "grid-cols-30";
- }
- return "grid-cols-31";
+  if (currentEndOfTheMonth === "28") {
+    return "grid-cols-28";
+  }
+  if (currentEndOfTheMonth === "29") {
+    return "grid-cols-29";
+  }
+  if (currentEndOfTheMonth === "30") {
+    return "grid-cols-30";
+  }
+  return "grid-cols-31";
 }
 
 const Home = () => {
@@ -102,8 +101,14 @@ interface HabitRecordsProps {
   habitId: string;
   month: string;
 }
+interface newRecordProps {
+  id: string;
+  date: string;
+  value: string;
+  habitId: string;
+}
 const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
-  const records = trpc.demo.getDemoRecords.useQuery({
+  const { data, isFetching } = trpc.demo.getDemoRecords.useQuery({
     month,
     habitId,
   });
@@ -115,48 +120,59 @@ const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
     end: endOfMonth(firstDayCurrentMonth),
   });
 
-  // TODO:
-  // create variable from loop a records data
-  // compare withs days or filter
-  // iif filter is true then render data
-  // if filter false render skeleton
-  // take the result to prints conditionaly
+  const newRecord: newRecordProps[] = [];
+  for (let index = 0; index < days.length; index++) {
+    const objIndex = data?.findIndex(
+      (obj: { date: string }) => Number(obj.date) === index + 1
+    );
+    if (objIndex !== -1) {
+      newRecord.push({
+        id: data?.[objIndex as number]?.id as string,
+        date: data?.[objIndex as number]?.date as string,
+        value: data?.[objIndex as number]?.value as string,
+        habitId,
+      });
+    } else {
+      newRecord.push({
+        id: `${index + 1}`,
+        date: format(days[index] as Date, "d"),
+        value: " ",
+        habitId,
+      });
+    }
+  }
 
-  // alternative
-  // write for loop if data exist push data
-  // if data not exist push skeleton
- 
-  const component = records.data?.map(({ id, value,date }: DemoRecord, index) => (
-    <li key={id}>
-      <p>{value === "1" ? "✔" : " "}</p>
-      <p>
-        {date.toString()}
-      </p>
-      <p>
-        {index}
-      </p>
-    </li>
-  ));
+  if (isFetching) {
+    return <p>Loading...</p>;
+  }
 
-  if (records.data?.length === 0) {
+  if (data?.length === 0) {
     return (
       <ol className={`grid ${gridOfTheMonth()}`}>
         {days.map((day) => (
           <li key={day.toString()}>
-            <p className="border">
-              <div className="opacity-0">
-                <time dateTime={format(day, "yyyy-MM-dd")}>
-                  {format(day, "d")}
-                </time>
-              </div>
-            </p>
+            <div className="border">
+              <p className="opacity-0">x</p>
+            </div>
           </li>
         ))}
       </ol>
     );
   }
 
-  return <ol className={` flex border`}>{component}</ol>;
+  const component = newRecord?.map(({ value }, index) => (
+    <li key={index}>
+      <p className="border-x">
+        {value === "1" ? "✔" : <span className="opacity-0">x</span>}
+      </p>
+    </li>
+  ));
+
+  return (
+    <ol className={`grid ${gridOfTheMonth()} border-y`}>
+      <Suspense fallback={<p>Loading</p>}>{component}</Suspense>
+    </ol>
+  );
 };
 
 export default Home;

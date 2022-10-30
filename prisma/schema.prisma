@@ -33,7 +33,7 @@ model DemoRecord {
   Demo        DemoHabit? @relation(fields: [demoHabitId], references: [id])
   demoHabitId String?
   month       String
-  date        DateTime   @default(now())
+  date        String
   value       String
 }
 
@@ -46,11 +46,11 @@ model Habit {
 }
 
 model Record {
-  id      String   @id @default(cuid())
-  Habit   Habit?   @relation(fields: [habitId], references: [id])
+  id      String  @id @default(cuid())
+  Habit   Habit?  @relation(fields: [habitId], references: [id])
   habitId String?
   month   String
-  date    DateTime @default(now())
+  date    String
   value   String
 }
 
