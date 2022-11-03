@@ -7,20 +7,22 @@ import {
   isToday,
   parse,
   startOfToday,
-  getDate,
 } from "date-fns";
 import { Suspense, useState } from "react";
 import { trpc } from "../utils/trpc";
 
-function gridOfTheMonth() {
-  const currentEndOfTheMonth = format(endOfMonth(new Date()), "d");
-  if (currentEndOfTheMonth === "28") {
+function gridOfTheMonth(month: string) {
+  const currentMonth = endOfMonth(
+    parse(month, "MMMM-yyyy", new Date())
+  ).toString();
+
+  if (currentMonth === "28") {
     return "grid-cols-28";
   }
-  if (currentEndOfTheMonth === "29") {
+  if (currentMonth === "29") {
     return "grid-cols-29";
   }
-  if (currentEndOfTheMonth === "30") {
+  if (currentMonth === "30") {
     return "grid-cols-30";
   }
   return "grid-cols-31";
@@ -67,7 +69,7 @@ const Home = () => {
             </div>
             <button onClick={nextMonth}>{">"}</button>
           </div>
-          <ol className={`grid ${gridOfTheMonth()}`}>
+          <ol className={`grid ${gridOfTheMonth(currentMonth)}`}>
             {days.map((day) => (
               <li
                 key={day.toString()}
@@ -102,24 +104,41 @@ interface HabitRecordsProps {
   month: string;
 }
 const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
+  // Query and Mutation
+  const utils = trpc.useContext();
   const { data: records, isFetching } = trpc.demo.getDemoRecords.useQuery({
     month,
     habitId,
   });
+  const createRecord = trpc.demo.createDemoRecord.useMutation({
+    onSuccess() {
+      utils.demo.getDemoRecords.invalidate({ month, habitId });
+    },
+  });
+  const updateRecord = trpc.demo.updateDemoRecord.useMutation({
+    onSuccess() {
+      utils.demo.getDemoRecords.invalidate({ month, habitId });
+    },
+  });
 
-  const firstDayCurrentMonth = parse(
-    format(startOfToday(), "MMMM-yyyy"),
-    "MMMM-yyyy",
-    new Date()
-  );
+  // Event action
+  const handleClick = async (id: string, date: string, value: string) => {
+    if (id.length > 4) {
+      updateRecord.mutate({ id, month, habitId, date, value });
+      console.log({ id, month, habitId, date, value });
+    }
+    createRecord.mutate({ month, habitId, date, value });
+  };
 
+  // Time Variables
+  const firstDayCurrentMonth = parse(month, "MMMM-yyyy", new Date());
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
     end: endOfMonth(firstDayCurrentMonth),
   });
 
+  // Creating new Data
   const newRecord: DemoRecord[] = [];
-
   for (let index = 0; index < days.length; index++) {
     const objIndex = records?.findIndex(
       (obj: { date: string }) => Number(obj.date) === index + 1
@@ -137,46 +156,69 @@ const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
         id: `${index + 1}`,
         month,
         date: format(days[index] as Date, "d"),
-        value: " ",
+        value: "0",
         demoHabitId: habitId,
       });
     }
   }
 
-  if (isFetching) {
+  // Loading State
+  if (isFetching || createRecord.isLoading || updateRecord.isLoading) {
     return <p>Loading...</p>;
   }
 
+  // Empty array from database
   if (records?.length === 0) {
     return (
-      <ol className={`grid ${gridOfTheMonth()}`}>
-        {days.map((day) => (
+      <ol className={`grid ${gridOfTheMonth(month)}`}>
+        {days.map((day, index) => (
           <li
             key={day.toString()}
-            className={`${isToday(day) && "bg-gray-500"} border`}
+            className={`${
+              isToday(day) && "bg-gray-500"
+            } border text-center hover:bg-blue-400`}
           >
-            <p className=" opacity-0">x</p>
+            <button
+              type="button"
+              className="w-full"
+              onClick={() =>
+                handleClick(index.toString(), format(day as Date, "d"), "1")
+              }
+              disabled={createRecord.isLoading || updateRecord.isLoading}
+            >
+              <span className="opacity-0">{format(day as Date, "d")}</span>
+            </button>
           </li>
         ))}
       </ol>
     );
   }
 
-  const component = newRecord?.map(({ value, date }, index) => (
+  function updateValues(value: string) {
+    if (value === "1") return "0";
+    return "1";
+  }
+
+  const component = newRecord?.map(({ id, value, date }, index) => (
     <li
       key={date}
       className={`${
         isToday(days?.[index] as Date) && "bg-gray-500"
-      } text-center`}
+      } border text-center hover:bg-blue-400`}
     >
-      <p className="border">
+      <button
+        type="button"
+        className="w-full"
+        onClick={() => handleClick(id, date, updateValues(value))}
+        disabled={createRecord.isLoading || updateRecord.isLoading}
+      >
         {value === "1" ? "✔" : <span className="opacity-0">{date}</span>}
-      </p>
+      </button>
     </li>
   ));
 
   return (
-    <ol className={`grid ${gridOfTheMonth()} `}>
+    <ol className={`grid ${gridOfTheMonth(month)} `}>
       <Suspense fallback={<p>Loading</p>}>{component}</Suspense>
     </ol>
   );

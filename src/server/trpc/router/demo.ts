@@ -8,10 +8,52 @@ export const demoRouter = router({
   getDemoRecords: publicProcedure
     .input(z.object({ month: z.string(), habitId: z.string() }))
     .query(async ({ ctx, input }) => {
-     return ctx.prisma.demoRecord.findMany({
+      return ctx.prisma.demoRecord.findMany({
         where: {
           month: input.month,
           demoHabitId: input.habitId,
+        },
+      });
+    }),
+  createDemoRecord: publicProcedure
+    .input(
+      z.object({
+        date: z.string(),
+        month: z.string(),
+        value: z.string(),
+        habitId: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.demoRecord.create({
+        data: {
+          demoHabitId: input.habitId,
+          month: input.month,
+          date: input.date,
+          value: input.value,
+        },
+      });
+    }),
+  updateDemoRecord: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        date: z.string(),
+        month: z.string(),
+        value: z.string(),
+        habitId: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.demoRecord.update({
+        where: {
+          id:input.id,
+        },
+        data: {
+          demoHabitId: input.habitId,
+          month: input.month,
+          date: input.date,
+          value: input.value,
         },
       });
     }),
