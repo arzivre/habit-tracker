@@ -91,7 +91,12 @@ const Home = () => {
         </ul>
         <section>
           {habits.data?.map(({ id }) => (
-            <HabitRecords key={id} habitId={id} month={currentMonth} />
+            <HabitRecords
+              key={id}
+              habitId={id}
+              month={currentMonth}
+              days={days}
+            />
           ))}
         </section>
       </article>
@@ -102,8 +107,9 @@ const Home = () => {
 interface HabitRecordsProps {
   habitId: string;
   month: string;
+  days: Date[];
 }
-const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
+const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
   // Query and Mutation
   const utils = trpc.useContext();
   const { data: records, isFetching } = trpc.demo.getDemoRecords.useQuery({
@@ -129,13 +135,6 @@ const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
     }
     createRecord.mutate({ month, habitId, date, value });
   };
-
-  // Time Variables
-  const firstDayCurrentMonth = parse(month, "MMMM-yyyy", new Date());
-  const days = eachDayOfInterval({
-    start: firstDayCurrentMonth,
-    end: endOfMonth(firstDayCurrentMonth),
-  });
 
   // Creating new Data
   const newRecord: DemoRecord[] = [];
@@ -164,7 +163,22 @@ const HabitRecords = ({ habitId, month }: HabitRecordsProps) => {
 
   // Loading State
   if (isFetching || createRecord.isLoading || updateRecord.isLoading) {
-    return <p>Loading...</p>;
+    return (
+      <ol className={`grid ${gridOfTheMonth(month)}`}>
+        {days.map((day) => (
+          <li
+            key={day.toString()}
+            className={`${
+              isToday(day) && "bg-gray-500"
+            } animate-pulse border text-center hover:bg-blue-400`}
+          >
+            <button type="button" className="w-full">
+              <span className="opacity-0">x</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    );
   }
 
   // Empty array from database
