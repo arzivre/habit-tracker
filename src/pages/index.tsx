@@ -65,7 +65,7 @@ const Home = () => {
               <li
                 key={day.toString()}
                 className={`${
-                  isToday(day) && "bg-gray-300"
+                  isToday(day) && "bg-yellow-400"
                 } border-r border-black text-center`}
               >
                 <div className="grid grid-cols-1">
@@ -177,7 +177,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
           <li
             key={day.toString()}
             className={`${
-              isToday(day) ? "bg-gray-300" : bgColor(index + 1)
+              isToday(day) ? "bg-yellow-400" : bgColor(index + 1)
             } text-center hover:bg-blue-400`}
           >
             <button
@@ -200,7 +200,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
           <li
             key={day.toString()}
             className={`${
-              isToday(day) ? "bg-gray-300" : bgColor(index + 1)
+              isToday(day) ? "bg-yellow-400" : bgColor(index + 1)
             } text-center hover:bg-blue-400`}
           >
             <button
@@ -228,7 +228,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     <li
       key={date}
       className={`${
-        isToday(days?.[index] as Date) ? "bg-gray-300" : bgColor(index + 1)
+        isToday(days?.[index] as Date) ? "bg-yellow-400" : bgColor(index + 1)
       } text-center hover:bg-blue-400`}
     >
       <button
