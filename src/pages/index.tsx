@@ -13,14 +13,14 @@ import { Suspense, useState } from "react";
 import { trpc } from "../utils/trpc";
 
 const Home = () => {
-  const today = startOfToday();
   const habits = trpc.demo.getDemoHabits.useQuery();
 
-  // const [selectedDay, setSelectedDay] = useState(today);
+  const today = startOfToday();
+
   const [currentMonth, setCurrentMonth] = useState(format(today, "MMMM-yyyy"));
 
   const firstDayCurrentMonth = parse(currentMonth, "MMMM-yyyy", new Date());
-
+  
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
     end: endOfMonth(firstDayCurrentMonth),
@@ -65,12 +65,14 @@ const Home = () => {
             {days.map((day) => (
               <li
                 key={day.toString()}
-                className={`${isToday(day) && "bg-orange-500"
-                  } border-r border-black text-center`}
+                className={`${
+                  isToday(day) && "bg-orange-500"
+                } border-r border-black text-center`}
               >
                 <div
-                  className={`grid grid-cols-1 ${isSunday(day) && "bg-rose-600"
-                    }`}
+                  className={`grid grid-cols-1 ${
+                    isSunday(day) && "bg-rose-600"
+                  }`}
                 >
                   <time dateTime={format(day, "yyyy-MM-dd")}>
                     {format(day, "E").slice(0, 2)}
@@ -89,7 +91,9 @@ const Home = () => {
           {habits.data?.map(({ title, id }) => (
             <li key={id} className="w-full">
               <div className="grid grid-cols-[300px_auto]">
-                <p className="border-b border-l border-black pl-2">{title}</p>
+                <p className="border-b border-l border-black pl-2 font-semibold">
+                  {title}
+                </p>
 
                 <section className="border-l border-black">
                   <HabitRecords
@@ -191,8 +195,9 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
   const component = newRecord?.map(({ id, value, date }, index) => (
     <li
       key={date}
-      className={`${isToday(days?.[index] as Date) ? "bg-orange-500" : bgColor(index + 1)
-        } text-center hover:bg-blue-400`}
+      className={`${
+        isToday(days?.[index] as Date) ? "bg-orange-500" : bgColor(index + 1)
+      } text-center hover:bg-blue-400`}
     >
       <button
         type="button"
@@ -222,8 +227,9 @@ const Loading = ({ month, days }: LoadingProps) => {
       {days.map((day, index) => (
         <li
           key={day.toString()}
-          className={`${isToday(day) ? "bg-orange-500" : bgColor(index + 1)
-            } text-center hover:bg-blue-400`}
+          className={`${
+            isToday(day) ? "bg-orange-500" : bgColor(index + 1)
+          } text-center hover:bg-blue-400`}
         >
           <button
             type="button"
