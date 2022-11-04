@@ -4,6 +4,7 @@ import {
   eachDayOfInterval,
   endOfMonth,
   format,
+  isSunday,
   isToday,
   parse,
   startOfToday,
@@ -37,20 +38,20 @@ const Home = () => {
 
   return (
     <div className="px-4">
-      <header className="mt-8 mb-4 grid grid-cols-[300px_auto]">
-        <h1 className="flex items-center justify-center text-4xl">
+      <header className="mt-4 mb-4 grid grid-cols-1">
+        <h1 className="mb-4 flex items-center justify-center font-serif text-7xl">
           Habit Tracker
         </h1>
-        <div className="flex items-center justify-center gap-8 font-semibold text-gray-900">
-          <button onClick={previousMonth} className="text-6xl">
+        <div className="flex items-start justify-start gap-8 font-semibold text-gray-900">
+          <button onClick={previousMonth} className="text-5xl">
             {"<"}
           </button>
           <div>
-            <time className="text-7xl">
+            <time className="text-6xl">
               {format(firstDayCurrentMonth, "MMMM yyyy")}
             </time>
           </div>
-          <button onClick={nextMonth} className="text-6xl">
+          <button onClick={nextMonth} className="text-5xl">
             {">"}
           </button>
         </div>
@@ -64,11 +65,13 @@ const Home = () => {
             {days.map((day) => (
               <li
                 key={day.toString()}
-                className={`${
-                  isToday(day) && "bg-yellow-400"
-                } border-r border-black text-center`}
+                className={`${isToday(day) && "bg-orange-500"
+                  } border-r border-black text-center`}
               >
-                <div className="grid grid-cols-1">
+                <div
+                  className={`grid grid-cols-1 ${isSunday(day) && "bg-rose-600"
+                    }`}
+                >
                   <time dateTime={format(day, "yyyy-MM-dd")}>
                     {format(day, "E").slice(0, 2)}
                   </time>
@@ -188,9 +191,8 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
   const component = newRecord?.map(({ id, value, date }, index) => (
     <li
       key={date}
-      className={`${
-        isToday(days?.[index] as Date) ? "bg-yellow-400" : bgColor(index + 1)
-      } text-center hover:bg-blue-400`}
+      className={`${isToday(days?.[index] as Date) ? "bg-orange-500" : bgColor(index + 1)
+        } text-center hover:bg-blue-400`}
     >
       <button
         type="button"
@@ -198,7 +200,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
         onClick={() => handleClick(id, date, updateValues(value))}
         disabled={createRecord.isLoading || updateRecord.isLoading}
       >
-        {value === "1" ? "✔" : <span className="opacity-0">{date}</span>}
+        {value === "1" ? "⭐" : <span className="opacity-0">{date}</span>}
       </button>
     </li>
   ));
@@ -220,9 +222,8 @@ const Loading = ({ month, days }: LoadingProps) => {
       {days.map((day, index) => (
         <li
           key={day.toString()}
-          className={`${
-            isToday(day) ? "bg-yellow-400" : bgColor(index + 1)
-          } text-center hover:bg-blue-400`}
+          className={`${isToday(day) ? "bg-orange-500" : bgColor(index + 1)
+            } text-center hover:bg-blue-400`}
         >
           <button
             type="button"
@@ -254,16 +255,41 @@ function gridOfTheMonth(month: string) {
 }
 
 function bgColor(index: number) {
-  if (index <= 7) {
-    return "bg-[#b5ede8]";
-  }
-  if (index >= 8 && index <= 14) {
-    return "bg-[#ff3082]";
-  }
-  if (index >= 15 && index <= 21) {
-    return "bg-[#ffc9a6]";
-  }
-  return "bg-[#97e2f7]";
+  const color = [
+    "bg-[#002f61]",
+    "bg-[#003969]",
+    "bg-[#004371]",
+    "bg-[#004d78]",
+    "bg-[#00567f]",
+    "bg-[#005f85]",
+    "bg-[#00688b]",
+    "bg-[#00718f]",
+    "bg-[#007a93]",
+    "bg-[#008396]",
+    "bg-[#008b98]",
+    "bg-[#00949a]",
+    "bg-[#009c9b]",
+    "bg-[#00a49c]",
+    "bg-[#00ad9b]",
+    "bg-[#00b599]",
+    "bg-[#00bd97]",
+    "bg-[#00c593]",
+    "bg-[#00cd8e]",
+    "bg-[#01d589]",
+    "bg-[#18dc82]",
+    "bg-[#2ee379]",
+    "bg-[#4ee870]",
+    "bg-[#69ed68]",
+    "bg-[#81f15e]",
+    "bg-[#97f554]",
+    "bg-[#adf849]",
+    "bg-[#c2fa3d]",
+    "bg-[#d6fc30]",
+    "bg-[#ebfe1f]",
+    "bg-[#ffff00]",
+  ];
+
+  return color[index];
 }
 
 export default Home;
