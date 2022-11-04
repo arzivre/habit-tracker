@@ -7,10 +7,11 @@ import {
   endOfYear,
   format,
   getMonth,
-  isSunday, isToday,
+  isSunday,
+  isToday,
   parse,
   startOfToday,
-  startOfYear
+  startOfYear,
 } from "date-fns";
 import { Suspense, useState } from "react";
 import { trpc } from "../utils/trpc";
@@ -217,7 +218,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     <li
       key={date}
       className={`${
-        isToday(days?.[index] as Date) ? "bg-orange-500" : bgColor(index + 1)
+        isToday(days?.[index] as Date) ? "bg-orange-500" : bgColor(index)
       } text-center hover:bg-blue-400`}
     >
       <button
@@ -249,7 +250,7 @@ const Loading = ({ month, days }: LoadingProps) => {
         <li
           key={day.toString()}
           className={`${
-            isToday(day) ? "bg-orange-500" : bgColor(index + 1)
+            isToday(day) ? "bg-orange-500" : bgColor(index)
           } text-center hover:bg-blue-400`}
         >
           <button
