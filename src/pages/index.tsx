@@ -87,17 +87,22 @@ const Home = () => {
             <li key={id} className="w-full">
               <div className="grid grid-cols-[300px_auto]">
                 <p className="border-b border-l border-black pl-2">{title}</p>
-                <section className="border-l border-black">
-                  <HabitRecords
-                    key={id}
-                    habitId={id}
-                    month={currentMonth}
-                    days={days}
-                  />
-                </section>
+                <Suspense
+                  fallback={<Loading month={currentMonth} days={days} />}
+                >
+                  <section className="border-l border-black">
+                    <HabitRecords
+                      key={id}
+                      habitId={id}
+                      month={currentMonth}
+                      days={days}
+                    />
+                  </section>
+                </Suspense>
               </div>
             </li>
           ))}
+
           {/* <li>
             <div className="grid grid-cols-[300px_auto]">
               <button className="flex justify-start border-l border-b border-black bg-green-400 pl-2">
@@ -169,59 +174,19 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     }
   }
 
-  // Loading State
-  if (isFetching || createRecord.isLoading || updateRecord.isLoading) {
-    return (
-      <ol className={`grid ${gridOfTheMonth(month)}`}>
-        {days.map((day, index) => (
-          <li
-            key={day.toString()}
-            className={`${
-              isToday(day) ? "bg-yellow-400" : bgColor(index + 1)
-            } text-center hover:bg-blue-400`}
-          >
-            <button
-              type="button"
-              className="w-full animate-pulse border-b border-r border-black"
-            >
-              <span className="opacity-0">x</span>
-            </button>
-          </li>
-        ))}
-      </ol>
-    );
-  }
-
-  // Empty array from database
-  if (records?.length === 0) {
-    return (
-      <ol className={`grid ${gridOfTheMonth(month)}`}>
-        {days.map((day, index) => (
-          <li
-            key={day.toString()}
-            className={`${
-              isToday(day) ? "bg-yellow-400" : bgColor(index + 1)
-            } text-center hover:bg-blue-400`}
-          >
-            <button
-              type="button"
-              className="w-full border-b border-r border-black"
-              onClick={() =>
-                handleClick(index.toString(), format(day as Date, "d"), "1")
-              }
-              disabled={createRecord.isLoading || updateRecord.isLoading}
-            >
-              <span className="opacity-0">{format(day as Date, "d")}</span>
-            </button>
-          </li>
-        ))}
-      </ol>
-    );
-  }
-
   function updateValues(value: string) {
     if (value === "1") return "0";
     return "1";
+  }
+
+  // Loading State
+  if (isFetching || createRecord.isLoading || updateRecord.isLoading) {
+    return <Loading month={month} days={days} />;
+  }
+
+  // Empty array or no data from database
+  if (records?.length === 0) {
+    return <Loading month={month} days={days} />;
   }
 
   const component = newRecord?.map(({ id, value, date }, index) => (
@@ -242,9 +207,31 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     </li>
   ));
 
+  return <ol className={`grid ${gridOfTheMonth(month)} `}>{component}</ol>;
+};
+
+interface LoadingProps {
+  month: string;
+  days: Date[];
+}
+const Loading = ({ month, days }: LoadingProps) => {
   return (
-    <ol className={`grid ${gridOfTheMonth(month)} `}>
-      <Suspense fallback={<p>Loading</p>}>{component}</Suspense>
+    <ol className={`grid ${gridOfTheMonth(month)}`}>
+      {days.map((day, index) => (
+        <li
+          key={day.toString()}
+          className={`${
+            isToday(day) ? "bg-yellow-400" : bgColor(index + 1)
+          } text-center hover:bg-blue-400`}
+        >
+          <button
+            type="button"
+            className="w-full border-b border-r border-black"
+          >
+            <span className="opacity-0">x</span>
+          </button>
+        </li>
+      ))}
     </ol>
   );
 };
