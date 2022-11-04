@@ -141,7 +141,6 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
   const handleClick = async (id: string, date: string, value: string) => {
     if (id.length > 4) {
       updateRecord.mutate({ id, month, habitId, date, value });
-      console.log({ id, month, habitId, date, value });
     }
     createRecord.mutate({ month, habitId, date, value });
   };
