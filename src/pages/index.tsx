@@ -37,51 +37,68 @@ const Home = () => {
 
   return (
     <div className="px-4">
-      <header className="flex w-full justify-start">
-        <h1 className="text-4xl">Habit Tracker</h1>
+      <header className="mt-8 mb-4 grid grid-cols-[300px_auto]">
+        <h1 className="flex items-center justify-center text-4xl">
+          Habit Tracker
+        </h1>
+        <div className="flex items-center justify-center gap-8 font-semibold text-gray-900">
+          <button onClick={previousMonth} className="text-6xl">
+            {"<"}
+          </button>
+          <div>
+            <time className="text-7xl">
+              {format(firstDayCurrentMonth, "MMMM yyyy")}
+            </time>
+          </div>
+          <button onClick={nextMonth} className="text-6xl">
+            {">"}
+          </button>
+        </div>
       </header>
-      <main className="grid grid-cols-[300px_auto] border-b-2 border-b-black">
-        <div className="flex w-[20vw] items-center justify-start align-middle">
+      <main className="grid grid-cols-[300px_auto] border-y border-black">
+        <div className="flex w-[20vw] flex-col items-center justify-start border-l border-black align-middle">
           <h2 className="text-3xl">Habits</h2>
         </div>
-        <section>
-          <div className="flex gap-8 font-semibold text-gray-900">
-            <button onClick={previousMonth}>{"<"}</button>
-            <div>
-              <time>{format(firstDayCurrentMonth, "MMMM yyyy")}</time>
-            </div>
-            <button onClick={nextMonth}>{">"}</button>
-          </div>
-          <ol className={`grid ${gridOfTheMonth(currentMonth)}`}>
+        <section className="border-l border-black">
+          <ol className={`grid ${gridOfTheMonth(currentMonth)} `}>
             {days.map((day) => (
               <li
                 key={day.toString()}
-                className={`${isToday(day) && "bg-gray-500"} m-0.5 text-center`}
+                className={`${
+                  isToday(day) && "bg-gray-500"
+                } border-r border-black text-center`}
               >
-                <time dateTime={format(day, "yyyy-MM-dd")}>
-                  {format(day, "d")}
-                </time>
+                <div className="grid grid-cols-1">
+                  <time dateTime={format(day, "yyyy-MM-dd")}>
+                    {format(day, "E").slice(0, 2)}
+                  </time>
+                  <time dateTime={format(day, "yyyy-MM-dd")}>
+                    {format(day, "d")}
+                  </time>
+                </div>
               </li>
             ))}
           </ol>
         </section>
       </main>
-      <article className="grid grid-cols-[300px_auto]">
-        <ul className="">
+      <article className=" ">
+        <ul>
           {habits.data?.map(({ title, id }) => (
-            <li key={id}>{title}</li>
+            <li key={id} className="w-full">
+              <div className="grid grid-cols-[300px_auto]">
+                <p className="border-b border-l border-black">{title}</p>
+                <section className="border-l border-black">
+                  <HabitRecords
+                    key={id}
+                    habitId={id}
+                    month={currentMonth}
+                    days={days}
+                  />
+                </section>
+              </div>
+            </li>
           ))}
         </ul>
-        <section>
-          {habits.data?.map(({ id }) => (
-            <HabitRecords
-              key={id}
-              habitId={id}
-              month={currentMonth}
-              days={days}
-            />
-          ))}
-        </section>
       </article>
     </div>
   );
@@ -153,7 +170,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
             key={day.toString()}
             className={`${
               isToday(day) ? "bg-gray-500" : bgColor(index + 1)
-            } animate-pulse border text-center hover:bg-blue-400`}
+            } animate-pulse text-center hover:bg-blue-400`}
           >
             <button type="button" className="w-full">
               <span className="opacity-0">x</span>
@@ -173,7 +190,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
             key={day.toString()}
             className={`${
               isToday(day) ? "bg-gray-500" : bgColor(index + 1)
-            } border text-center hover:bg-blue-400`}
+            } text-center hover:bg-blue-400`}
           >
             <button
               type="button"
@@ -201,11 +218,11 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
       key={date}
       className={`${
         isToday(days?.[index] as Date) ? "bg-gray-500" : bgColor(index + 1)
-      } border text-center hover:bg-blue-400`}
+      } text-center hover:bg-blue-400`}
     >
       <button
         type="button"
-        className="w-full"
+        className="w-full border-b border-r border-black"
         onClick={() => handleClick(id, date, updateValues(value))}
         disabled={createRecord.isLoading || updateRecord.isLoading}
       >
@@ -220,7 +237,6 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     </ol>
   );
 };
-
 
 function gridOfTheMonth(month: string) {
   const currentMonth = endOfMonth(
