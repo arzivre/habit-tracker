@@ -65,7 +65,7 @@ const Home = () => {
               <li
                 key={day.toString()}
                 className={`${
-                  isToday(day) && "bg-gray-500"
+                  isToday(day) && "bg-gray-300"
                 } border-r border-black text-center`}
               >
                 <div className="grid grid-cols-1">
@@ -86,7 +86,7 @@ const Home = () => {
           {habits.data?.map(({ title, id }) => (
             <li key={id} className="w-full">
               <div className="grid grid-cols-[300px_auto]">
-                <p className="border-b border-l border-black">{title}</p>
+                <p className="border-b border-l border-black pl-2">{title}</p>
                 <section className="border-l border-black">
                   <HabitRecords
                     key={id}
@@ -98,6 +98,14 @@ const Home = () => {
               </div>
             </li>
           ))}
+          {/* <li>
+            <div className="grid grid-cols-[300px_auto]">
+              <button className="flex justify-start border-l border-b border-black bg-green-400 pl-2">
+                <p>Add new Habit</p>
+              </button>
+              <section className="border-x border-b border-black"></section>
+            </div>
+          </li> */}
         </ul>
       </article>
     </div>
@@ -169,10 +177,13 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
           <li
             key={day.toString()}
             className={`${
-              isToday(day) ? "bg-gray-500" : bgColor(index + 1)
-            } animate-pulse text-center hover:bg-blue-400`}
+              isToday(day) ? "bg-gray-300" : bgColor(index + 1)
+            } text-center hover:bg-blue-400`}
           >
-            <button type="button" className="w-full">
+            <button
+              type="button"
+              className="w-full animate-pulse border-b border-r border-black"
+            >
               <span className="opacity-0">x</span>
             </button>
           </li>
@@ -189,12 +200,12 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
           <li
             key={day.toString()}
             className={`${
-              isToday(day) ? "bg-gray-500" : bgColor(index + 1)
+              isToday(day) ? "bg-gray-300" : bgColor(index + 1)
             } text-center hover:bg-blue-400`}
           >
             <button
               type="button"
-              className="w-full"
+              className="w-full border-b border-r border-black"
               onClick={() =>
                 handleClick(index.toString(), format(day as Date, "d"), "1")
               }
@@ -217,7 +228,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     <li
       key={date}
       className={`${
-        isToday(days?.[index] as Date) ? "bg-gray-500" : bgColor(index + 1)
+        isToday(days?.[index] as Date) ? "bg-gray-300" : bgColor(index + 1)
       } text-center hover:bg-blue-400`}
     >
       <button
