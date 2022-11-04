@@ -87,18 +87,15 @@ const Home = () => {
             <li key={id} className="w-full">
               <div className="grid grid-cols-[300px_auto]">
                 <p className="border-b border-l border-black pl-2">{title}</p>
-                <Suspense
-                  fallback={<Loading month={currentMonth} days={days} />}
-                >
-                  <section className="border-l border-black">
-                    <HabitRecords
-                      key={id}
-                      habitId={id}
-                      month={currentMonth}
-                      days={days}
-                    />
-                  </section>
-                </Suspense>
+
+                <section className="border-l border-black">
+                  <HabitRecords
+                    key={id}
+                    habitId={id}
+                    month={currentMonth}
+                    days={days}
+                  />
+                </section>
               </div>
             </li>
           ))}
@@ -207,7 +204,11 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     </li>
   ));
 
-  return <ol className={`grid ${gridOfTheMonth(month)} `}>{component}</ol>;
+  return (
+    <Suspense fallback={<Loading month={month} days={days} />}>
+      <ol className={`grid ${gridOfTheMonth(month)} `}>{component}</ol>
+    </Suspense>
+  );
 };
 
 interface LoadingProps {
