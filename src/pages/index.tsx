@@ -2,12 +2,15 @@ import type { DemoRecord } from "@prisma/client";
 import {
   add,
   eachDayOfInterval,
+  eachMonthOfInterval,
   endOfMonth,
+  endOfYear,
   format,
-  isSunday,
-  isToday,
+  getMonth,
+  isSunday, isToday,
   parse,
   startOfToday,
+  startOfYear
 } from "date-fns";
 import { Suspense, useState } from "react";
 import { trpc } from "../utils/trpc";
@@ -39,26 +42,44 @@ const Home = () => {
   return (
     <div className="px-4">
       <header className="mt-4 mb-4 grid grid-cols-1">
-        <h1 className="mb-4 flex items-center justify-center font-serif text-7xl">
+        <h1 className="mb-4 flex items-start justify-start font-serif text-7xl uppercase">
           Habit Tracker
         </h1>
-        <div className="flex items-start justify-start gap-8 font-semibold text-gray-900">
-          <button onClick={previousMonth} className="text-5xl">
-            {"<"}
-          </button>
-          <div>
-            <time className="text-6xl">
-              {format(firstDayCurrentMonth, "MMMM yyyy")}
-            </time>
+        <div className="grid grid-cols-[300px_auto]">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center justify-center">
+            <button onClick={previousMonth} className="pb-2 text-4xl font-bold">
+              {"<"}
+            </button>
+            <p className="text-center text-2xl uppercase">
+              {format(
+                parse(currentMonth, "MMMM-yyyy", new Date()),
+                "MMMM yyyy"
+              )}
+            </p>
+            <button onClick={nextMonth} className="pb-2 text-4xl font-bold">
+              {">"}
+            </button>
           </div>
-          <button onClick={nextMonth} className="text-5xl">
-            {">"}
-          </button>
+          <ol className="grid grid-cols-12 items-center justify-center">
+            {eachMonthOfInterval({
+              start: startOfYear(days[1] as Date),
+              end: endOfYear(days[10] as Date),
+            }).map((month, index) => (
+              <li
+                key={month.toString()}
+                className={`${
+                  getMonth(firstDayCurrentMonth) === index && "bg-orange-500"
+                } border border-black pl-2 text-2xl uppercase`}
+              >
+                {format(month, "MMM")}
+              </li>
+            ))}
+          </ol>
         </div>
       </header>
       <main className="grid grid-cols-[300px_auto] border-y border-black">
-        <div className="flex w-[20vw] flex-col items-center justify-start border-l border-black align-middle">
-          <h2 className="text-3xl">Habits</h2>
+        <div className="flex items-center justify-start border-l border-black pl-2 align-middle">
+          <h2 className="text-3xl uppercase">Habit</h2>
         </div>
         <section className="border-l border-black">
           <ol className={`grid ${gridOfTheMonth(currentMonth)} `}>
@@ -67,7 +88,7 @@ const Home = () => {
                 key={day.toString()}
                 className={`${
                   isToday(day) && "bg-orange-500"
-                } border-r border-black text-center`}
+                } border-r border-black text-center uppercase`}
               >
                 <div
                   className={`grid grid-cols-1 ${
