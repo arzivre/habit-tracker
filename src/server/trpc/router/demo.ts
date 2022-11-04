@@ -2,11 +2,63 @@ import { z } from "zod";
 import { publicProcedure, router } from "../trpc";
 
 export const demoRouter = router({
-  getDemoHabits: publicProcedure.query(async ({ ctx }) => {
+  getHabits: publicProcedure.query(async ({ ctx }) => {
     return ctx.prisma.demoHabit.findMany();
   }),
-  getDemoRecords: publicProcedure
-    .input(z.object({ month: z.string(), habitId: z.string() }))
+  createHabit: publicProcedure
+    .input(
+      z.object({
+        title: z.string(),
+        filterId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.demoHabit.create({
+        data: {
+          title: input.title,
+          filterId: input.filterId,
+        },
+      });
+    }),
+  updateHabit: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        filterId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.demoHabit.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          title: input.title,
+          filterId: input.filterId,
+        },
+      });
+    }),
+  deleteHabit: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.demoHabit.delete({
+        where: {
+          id: input.id,
+        },
+      });
+    }),
+  getRecords: publicProcedure
+    .input(
+      z.object({
+        month: z.string(),
+        habitId: z.string(),
+      })
+    )
     .query(async ({ ctx, input }) => {
       return ctx.prisma.demoRecord.findMany({
         where: {
@@ -15,7 +67,7 @@ export const demoRouter = router({
         },
       });
     }),
-  createDemoRecord: publicProcedure
+  createRecord: publicProcedure
     .input(
       z.object({
         date: z.string(),
@@ -24,7 +76,7 @@ export const demoRouter = router({
         habitId: z.string(),
       })
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       return ctx.prisma.demoRecord.create({
         data: {
           demoHabitId: input.habitId,
@@ -34,7 +86,7 @@ export const demoRouter = router({
         },
       });
     }),
-  updateDemoRecord: publicProcedure
+  updateRecord: publicProcedure
     .input(
       z.object({
         id: z.string(),
@@ -44,10 +96,10 @@ export const demoRouter = router({
         habitId: z.string(),
       })
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       return ctx.prisma.demoRecord.update({
         where: {
-          id:input.id,
+          id: input.id,
         },
         data: {
           demoHabitId: input.habitId,

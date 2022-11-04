@@ -13,14 +13,14 @@ import { Suspense, useState } from "react";
 import { trpc } from "../utils/trpc";
 
 const Home = () => {
-  const habits = trpc.demo.getDemoHabits.useQuery();
+  const habits = trpc.demo.getHabits.useQuery();
 
   const today = startOfToday();
 
   const [currentMonth, setCurrentMonth] = useState(format(today, "MMMM-yyyy"));
 
   const firstDayCurrentMonth = parse(currentMonth, "MMMM-yyyy", new Date());
-  
+
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
     end: endOfMonth(firstDayCurrentMonth),
@@ -129,18 +129,18 @@ interface HabitRecordsProps {
 const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
   // Query and Mutation
   const utils = trpc.useContext();
-  const { data: records, isFetching } = trpc.demo.getDemoRecords.useQuery({
+  const { data: records, isFetching } = trpc.demo.getRecords.useQuery({
     month,
     habitId,
   });
-  const createRecord = trpc.demo.createDemoRecord.useMutation({
+  const createRecord = trpc.demo.createRecord.useMutation({
     onSuccess() {
-      utils.demo.getDemoRecords.invalidate({ month, habitId });
+      utils.demo.getRecords.invalidate({ month, habitId });
     },
   });
-  const updateRecord = trpc.demo.updateDemoRecord.useMutation({
+  const updateRecord = trpc.demo.updateRecord.useMutation({
     onSuccess() {
-      utils.demo.getDemoRecords.invalidate({ month, habitId });
+      utils.demo.getRecords.invalidate({ month, habitId });
     },
   });
 
