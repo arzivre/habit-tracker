@@ -11,23 +11,6 @@ import {
 import { Suspense, useState } from "react";
 import { trpc } from "../utils/trpc";
 
-function gridOfTheMonth(month: string) {
-  const currentMonth = endOfMonth(
-    parse(month, "MMMM-yyyy", new Date())
-  ).toString();
-
-  if (currentMonth === "28") {
-    return "grid-cols-28";
-  }
-  if (currentMonth === "29") {
-    return "grid-cols-29";
-  }
-  if (currentMonth === "30") {
-    return "grid-cols-30";
-  }
-  return "grid-cols-31";
-}
-
 const Home = () => {
   const today = startOfToday();
   const habits = trpc.demo.getDemoHabits.useQuery();
@@ -165,11 +148,11 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
   if (isFetching || createRecord.isLoading || updateRecord.isLoading) {
     return (
       <ol className={`grid ${gridOfTheMonth(month)}`}>
-        {days.map((day) => (
+        {days.map((day, index) => (
           <li
             key={day.toString()}
             className={`${
-              isToday(day) && "bg-gray-500"
+              isToday(day) ? "bg-gray-500" : bgColor(index + 1)
             } animate-pulse border text-center hover:bg-blue-400`}
           >
             <button type="button" className="w-full">
@@ -189,7 +172,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
           <li
             key={day.toString()}
             className={`${
-              isToday(day) && "bg-gray-500"
+              isToday(day) ? "bg-gray-500" : bgColor(index + 1)
             } border text-center hover:bg-blue-400`}
           >
             <button
@@ -217,7 +200,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     <li
       key={date}
       className={`${
-        isToday(days?.[index] as Date) && "bg-gray-500"
+        isToday(days?.[index] as Date) ? "bg-gray-500" : bgColor(index + 1)
       } border text-center hover:bg-blue-400`}
     >
       <button
@@ -237,5 +220,36 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     </ol>
   );
 };
+
+
+function gridOfTheMonth(month: string) {
+  const currentMonth = endOfMonth(
+    parse(month, "MMMM-yyyy", new Date())
+  ).toString();
+
+  if (currentMonth === "28") {
+    return "grid-cols-28";
+  }
+  if (currentMonth === "29") {
+    return "grid-cols-29";
+  }
+  if (currentMonth === "30") {
+    return "grid-cols-30";
+  }
+  return "grid-cols-31";
+}
+
+function bgColor(index: number) {
+  if (index <= 7) {
+    return "bg-[#b5ede8]";
+  }
+  if (index >= 8 && index <= 14) {
+    return "bg-[#ff3082]";
+  }
+  if (index >= 15 && index <= 21) {
+    return "bg-[#ffc9a6]";
+  }
+  return "bg-[#97e2f7]";
+}
 
 export default Home;
