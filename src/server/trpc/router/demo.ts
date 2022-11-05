@@ -56,14 +56,14 @@ export const demoRouter = router({
     .input(
       z.object({
         month: z.string(),
-        habitId: z.string(),
+        demoHabitId: z.string(),
       })
     )
     .query(async ({ ctx, input }) => {
       return ctx.prisma.demoRecord.findMany({
         where: {
           month: input.month,
-          demoHabitId: input.habitId,
+          demoHabitId: input.demoHabitId,
         },
       });
     }),
@@ -73,13 +73,13 @@ export const demoRouter = router({
         date: z.string(),
         month: z.string(),
         value: z.string(),
-        habitId: z.string(),
+        demoHabitId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.demoRecord.create({
         data: {
-          demoHabitId: input.habitId,
+          demoHabitId: input.demoHabitId,
           month: input.month,
           date: input.date,
           value: input.value,
@@ -93,7 +93,7 @@ export const demoRouter = router({
         date: z.string(),
         month: z.string(),
         value: z.string(),
-        habitId: z.string(),
+        demoHabitId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -102,7 +102,7 @@ export const demoRouter = router({
           id: input.id,
         },
         data: {
-          demoHabitId: input.habitId,
+          demoHabitId: input.demoHabitId,
           month: input.month,
           date: input.date,
           value: input.value,

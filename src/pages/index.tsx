@@ -14,6 +14,8 @@ import {
   startOfYear,
 } from "date-fns";
 import { Suspense, useState } from "react";
+import { FullScreenLoader } from "../components/Loader";
+import { bgColor, gridOfTheMonth } from "../utils/style";
 import { trpc } from "../utils/trpc";
 
 const Home = () => {
@@ -122,7 +124,7 @@ const Home = () => {
                 <section className="border-l border-black">
                   <HabitRecords
                     key={id}
-                    habitId={id}
+                    demoHabitId={id}
                     month={currentMonth}
                     days={days}
                   />
@@ -167,9 +169,26 @@ const HabitTitle = ({ children, id }: { children: string; id: string }) => {
   return (
     <p className="flex justify-between border-b border-l border-black pl-2 font-semibold">
       {children}
-      <span className="pr-3 text-red-500">
+      <span className="pr-1 text-red-500">
         <button onClick={handleDelete} disabled={deleteHabit.isLoading}>
-          {deleteHabit.isLoading ? "Loading" : "x"}
+          {deleteHabit.isLoading ? (
+            "Loading"
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-4 w-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+              />
+            </svg>
+          )}
         </button>
       </span>
     </p>
@@ -204,7 +223,7 @@ const AddHabit = ({ index }: { index: string }) => {
 
   function handleSubmit() {
     if (title === "") {
-      return;
+      return setShowForm(false);
     }
     createHabit.mutate({ title, filterId: index });
     setTitle("");
@@ -220,11 +239,24 @@ const AddHabit = ({ index }: { index: string }) => {
               type="text"
               onChange={(e) => setTitle(e.target.value)}
               value={title}
+              placeholder="Habit Title"
+              className="border-b border-l border-black pl-2"
             />
-            <button type="submit">
+            <button
+              type="submit"
+              className="w-full bg-green-300 uppercase
+                 text-green-900 hover:bg-green-600 hover:text-green-100"
+            >
               {createHabit.isLoading ? "Loading" : "Add New Habit"}
             </button>
-            <section className="border-x border-b border-black"></section>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="w-full bg-red-300 uppercase 
+                text-red-900 hover:bg-red-600 hover:text-red-100"
+            >
+              Cancel
+            </button>
           </div>
         </form>
       </li>
@@ -248,59 +280,30 @@ const AddHabit = ({ index }: { index: string }) => {
 };
 
 interface HabitRecordsProps {
-  habitId: string;
+  demoHabitId: string;
   month: string;
   days: Date[];
 }
-const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
+const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
   // Query and Mutation
   const utils = trpc.useContext();
+
   const { data: records, isFetching } = trpc.demo.getRecords.useQuery({
     month,
-    habitId,
+    demoHabitId,
   });
+
   const createRecord = trpc.demo.createRecord.useMutation({
-    async onMutate(newRecord) {
-      await utils.demo.getRecords.cancel();
-      const prevData = utils.demo.getRecords.getData();
-      utils.demo.getRecords.setData([
-        ...(prevData as DemoRecord[]),
-        { id: newRecord.date, demoHabitId: habitId, ...newRecord },
-      ]);
-      return { prevData };
-    },
-    onError(error, variables, context) {
-      utils.demo.getRecords.setData(context?.prevData);
-    },
     onSettled() {
-      utils.demo.getRecords.invalidate({ month, habitId });
-    },
-  });
-  const updateRecord = trpc.demo.updateRecord.useMutation({
-    async onMutate(newRecord) {
-      await utils.demo.getRecords.cancel();
-      const prevData = utils.demo.getRecords.getData();
-      utils.demo.getRecords.setData([
-        ...(prevData as DemoRecord[]),
-        { demoHabitId: habitId, ...newRecord },
-      ]);
-      return { prevData };
-    },
-    onError(error, variables, context) {
-      utils.demo.getRecords.setData(context?.prevData);
-    },
-    onSettled() {
-      utils.demo.getRecords.invalidate({ month, habitId });
+      utils.demo.getRecords.invalidate({ month, demoHabitId });
     },
   });
 
-  // Event action
-  const handleClick = async (id: string, date: string, value: string) => {
-    if (id.length > 4) {
-      updateRecord.mutate({ id, month, habitId, date, value });
-    }
-    createRecord.mutate({ month, habitId, date, value });
-  };
+  const updateRecord = trpc.demo.updateRecord.useMutation({
+    onSettled() {
+      utils.demo.getRecords.invalidate({ month, demoHabitId });
+    },
+  });
 
   // Creating new Data
   const newRecords: DemoRecord[] = [];
@@ -314,7 +317,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
         month,
         date: records?.[objIndex as number]?.date as string,
         value: records?.[objIndex as number]?.value as string,
-        demoHabitId: habitId,
+        demoHabitId,
       });
     } else {
       newRecords.push({
@@ -322,24 +325,22 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
         month,
         date: format(days[index] as Date, "d"),
         value: "0",
-        demoHabitId: habitId,
+        demoHabitId,
       });
     }
   }
 
+  // Event action
+  const handleClick = async (id: string, date: string, value: string) => {
+    if (id.length > 4) {
+      updateRecord.mutate({ id, month, demoHabitId, date, value });
+    }
+    createRecord.mutate({ month, demoHabitId, date, value });
+  };
+
   function updateValues(value: string) {
     if (value === "1") return "0";
     return "1";
-  }
-
-  // Loading State
-  if (isFetching || createRecord.isLoading || updateRecord.isLoading) {
-    return <Loading month={month} days={days} />;
-  }
-
-  // Empty array or no data from database
-  if (records?.length === 0) {
-    return <Loading month={month} days={days} />;
   }
 
   const component = newRecords?.map(({ id, value, date }, index) => (
@@ -360,6 +361,16 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     </li>
   ));
 
+  // Loading State
+  if (isFetching || createRecord.isLoading || updateRecord.isLoading) {
+    return <Loading month={month} days={days} />;
+  }
+
+  // Empty array or no data from database
+  if (records?.length === 0) {
+    return <ol className={`grid ${gridOfTheMonth(month)} `}>{component}</ol>;
+  }
+
   return (
     <Suspense fallback={<Loading month={month} days={days} />}>
       <ol className={`grid ${gridOfTheMonth(month)} `}>{component}</ol>
@@ -379,7 +390,7 @@ const Loading = ({ month, days }: LoadingProps) => {
           key={day.toString()}
           className={`${
             isToday(day) ? "bg-orange-500" : bgColor(index)
-          } text-center hover:bg-blue-400`}
+          } animate-pulse text-center hover:bg-blue-400`}
         >
           <button
             type="button"
@@ -392,73 +403,5 @@ const Loading = ({ month, days }: LoadingProps) => {
     </ol>
   );
 };
-
-function FullScreenLoader() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div
-        className="spinner-border inline-block h-8 w-8 animate-spin rounded-full border-4"
-        role="status"
-      >
-        <span className="visually-hidden">Loading...</span>
-      </div>
-    </div>
-  );
-}
-
-function gridOfTheMonth(month: string) {
-  const currentMonth = endOfMonth(
-    parse(month, "MMMM-yyyy", new Date())
-  ).toString();
-
-  if (currentMonth === "28") {
-    return "grid-cols-28";
-  }
-  if (currentMonth === "29") {
-    return "grid-cols-29";
-  }
-  if (currentMonth === "30") {
-    return "grid-cols-30";
-  }
-  return "grid-cols-31";
-}
-
-function bgColor(index: number) {
-  const color = [
-    "bg-[#002f61]",
-    "bg-[#003969]",
-    "bg-[#004371]",
-    "bg-[#004d78]",
-    "bg-[#00567f]",
-    "bg-[#005f85]",
-    "bg-[#00688b]",
-    "bg-[#00718f]",
-    "bg-[#007a93]",
-    "bg-[#008396]",
-    "bg-[#008b98]",
-    "bg-[#00949a]",
-    "bg-[#009c9b]",
-    "bg-[#00a49c]",
-    "bg-[#00ad9b]",
-    "bg-[#00b599]",
-    "bg-[#00bd97]",
-    "bg-[#00c593]",
-    "bg-[#00cd8e]",
-    "bg-[#01d589]",
-    "bg-[#18dc82]",
-    "bg-[#2ee379]",
-    "bg-[#4ee870]",
-    "bg-[#69ed68]",
-    "bg-[#81f15e]",
-    "bg-[#97f554]",
-    "bg-[#adf849]",
-    "bg-[#c2fa3d]",
-    "bg-[#d6fc30]",
-    "bg-[#ebfe1f]",
-    "bg-[#ffff00]",
-  ];
-
-  return color[index];
-}
 
 export default Home;
