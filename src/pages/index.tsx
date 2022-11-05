@@ -1,4 +1,4 @@
-import type { DemoRecord } from "@prisma/client";
+import type { DemoHabit, DemoRecord } from "@prisma/client";
 import {
   add,
   eachDayOfInterval,
@@ -38,6 +38,10 @@ const Home = () => {
   function nextMonth() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
+  }
+
+  if (habits.isLoading) {
+    return <FullScreenLoader />;
   }
 
   return (
@@ -113,9 +117,7 @@ const Home = () => {
           {habits.data?.map(({ title, id }) => (
             <li key={id} className="w-full">
               <div className="grid grid-cols-[300px_auto]">
-                <p className="border-b border-l border-black pl-2 font-semibold">
-                  {title}
-                </p>
+                <HabitTitle id={id}>{title}</HabitTitle>
 
                 <section className="border-l border-black">
                   <HabitRecords
@@ -128,18 +130,120 @@ const Home = () => {
               </div>
             </li>
           ))}
-
-          {/* <li>
-            <div className="grid grid-cols-[300px_auto]">
-              <button className="flex justify-start border-l border-b border-black bg-green-400 pl-2">
-                <p>Add new Habit</p>
-              </button>
-              <section className="border-x border-b border-black"></section>
-            </div>
-          </li> */}
+          <AddHabit index={habits?.data?.length.toString() as string} />
         </ul>
       </article>
     </div>
+  );
+};
+
+const HabitTitle = ({ children, id }: { children: string; id: string }) => {
+  const utils = trpc.useContext();
+
+  const deleteHabit = trpc.demo.deleteHabit.useMutation({
+    async onMutate(deleteHabit) {
+      await utils.demo.getHabits.cancel();
+
+      const prevHabits = utils.demo.getHabits.getData();
+
+      utils.demo.getHabits.setData(
+        prevHabits?.filter((habit) => habit.id !== deleteHabit.id)
+      );
+
+      return { prevHabits };
+    },
+    onError(error, variables, context) {
+      utils.demo.getHabits.setData(context?.prevHabits);
+    },
+    onSettled() {
+      utils.demo.getHabits.invalidate();
+    },
+  });
+
+  function handleDelete() {
+    deleteHabit.mutate({ id });
+  }
+
+  return (
+    <p className="flex justify-between border-b border-l border-black pl-2 font-semibold">
+      {children}
+      <span className="pr-3 text-red-500">
+        <button onClick={handleDelete} disabled={deleteHabit.isLoading}>
+          {deleteHabit.isLoading ? "Loading" : "x"}
+        </button>
+      </span>
+    </p>
+  );
+};
+
+const AddHabit = ({ index }: { index: string }) => {
+  const [showForm, setShowForm] = useState(false);
+  const [title, setTitle] = useState("");
+
+  const utils = trpc.useContext();
+  const createHabit = trpc.demo.createHabit.useMutation({
+    async onMutate(newHabit) {
+      await utils.demo.getHabits.cancel();
+
+      const prevHabits = utils.demo.getHabits.getData();
+
+      utils.demo.getHabits.setData([
+        ...(prevHabits as DemoHabit[]),
+        { id: index, ...newHabit },
+      ]);
+
+      return { prevHabits };
+    },
+    onError(error, variables, context) {
+      utils.demo.getHabits.setData(context?.prevHabits);
+    },
+    onSettled() {
+      utils.demo.getHabits.invalidate();
+    },
+  });
+
+  function handleSubmit() {
+    if (title === "") {
+      return;
+    }
+    createHabit.mutate({ title, filterId: index });
+    setTitle("");
+    setShowForm(false);
+  }
+
+  if (showForm) {
+    return (
+      <li>
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-[300px_auto]">
+            <input
+              type="text"
+              onChange={(e) => setTitle(e.target.value)}
+              value={title}
+            />
+            <button type="submit">
+              {createHabit.isLoading ? "Loading" : "Add New Habit"}
+            </button>
+            <section className="border-x border-b border-black"></section>
+          </div>
+        </form>
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <div className="grid grid-cols-[300px_auto]">
+        <button
+          type="button"
+          onClick={() => setShowForm(true)}
+          className="flex justify-start border-l border-b border-black bg-green-400 pl-2"
+        >
+          <p>Add new Habit</p>
+        </button>
+        <section className="border-x border-b border-black"></section>
+      </div>
+    </li>
   );
 };
 
@@ -156,12 +260,36 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     habitId,
   });
   const createRecord = trpc.demo.createRecord.useMutation({
-    onSuccess() {
+    async onMutate(newRecord) {
+      await utils.demo.getRecords.cancel();
+      const prevData = utils.demo.getRecords.getData();
+      utils.demo.getRecords.setData([
+        ...(prevData as DemoRecord[]),
+        { id: newRecord.date, demoHabitId: habitId, ...newRecord },
+      ]);
+      return { prevData };
+    },
+    onError(error, variables, context) {
+      utils.demo.getRecords.setData(context?.prevData);
+    },
+    onSettled() {
       utils.demo.getRecords.invalidate({ month, habitId });
     },
   });
   const updateRecord = trpc.demo.updateRecord.useMutation({
-    onSuccess() {
+    async onMutate(newRecord) {
+      await utils.demo.getRecords.cancel();
+      const prevData = utils.demo.getRecords.getData();
+      utils.demo.getRecords.setData([
+        ...(prevData as DemoRecord[]),
+        { demoHabitId: habitId, ...newRecord },
+      ]);
+      return { prevData };
+    },
+    onError(error, variables, context) {
+      utils.demo.getRecords.setData(context?.prevData);
+    },
+    onSettled() {
       utils.demo.getRecords.invalidate({ month, habitId });
     },
   });
@@ -175,13 +303,13 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
   };
 
   // Creating new Data
-  const newRecord: DemoRecord[] = [];
+  const newRecords: DemoRecord[] = [];
   for (let index = 0; index < days.length; index++) {
     const objIndex = records?.findIndex(
       (obj: { date: string }) => Number(obj.date) === index + 1
     );
     if (objIndex !== -1) {
-      newRecord.push({
+      newRecords.push({
         id: records?.[objIndex as number]?.id as string,
         month,
         date: records?.[objIndex as number]?.date as string,
@@ -189,7 +317,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
         demoHabitId: habitId,
       });
     } else {
-      newRecord.push({
+      newRecords.push({
         id: `${index + 1}`,
         month,
         date: format(days[index] as Date, "d"),
@@ -214,7 +342,7 @@ const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
     return <Loading month={month} days={days} />;
   }
 
-  const component = newRecord?.map(({ id, value, date }, index) => (
+  const component = newRecords?.map(({ id, value, date }, index) => (
     <li
       key={date}
       className={`${
@@ -264,6 +392,19 @@ const Loading = ({ month, days }: LoadingProps) => {
     </ol>
   );
 };
+
+function FullScreenLoader() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div
+        className="spinner-border inline-block h-8 w-8 animate-spin rounded-full border-4"
+        role="status"
+      >
+        <span className="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  );
+}
 
 function gridOfTheMonth(month: string) {
   const currentMonth = endOfMonth(
