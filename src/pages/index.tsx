@@ -47,12 +47,15 @@ const Home = () => {
   }
 
   return (
-    <div className="px-4">
-      <header className="mt-4 mb-4 grid grid-cols-1">
-        <h1 className="mb-4 flex items-start justify-start font-serif text-7xl uppercase">
+    <div className="min-h-screen bg-[##fffffe] px-4">
+      <header className="mb-4 grid grid-cols-1 pt-4">
+        <h1
+          className="mb-4 flex items-start justify-start font-serif text-7xl 
+        uppercase text-[#272343]"
+        >
           Habit Tracker
         </h1>
-        <div className="grid grid-cols-[300px_auto]">
+        <div className="grid grid-cols-[300px_auto] text-[#272343]">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center justify-center">
             <button onClick={previousMonth} className="pb-2 text-4xl font-bold">
               {"<"}
@@ -75,8 +78,8 @@ const Home = () => {
               <li
                 key={month.toString()}
                 className={`${
-                  getMonth(firstDayCurrentMonth) === index && "bg-orange-500"
-                } border border-black pl-2 text-2xl uppercase`}
+                  getMonth(firstDayCurrentMonth) === index && "bg-[#ffd803]"
+                } pl-2 text-2xl uppercase hover:bg-blue-300`}
               >
                 {format(month, "MMM")}
               </li>
@@ -84,21 +87,21 @@ const Home = () => {
           </ol>
         </div>
       </header>
-      <main className="grid grid-cols-[300px_auto] border-y border-black">
-        <div className="flex items-center justify-start border-l border-black pl-2 align-middle">
-          <h2 className="text-3xl uppercase">Habit</h2>
+      <main className="mb-4 grid grid-cols-[300px_auto] bg-[#272343]">
+        <div className="flex items-center justify-start pl-2 align-middle">
+          <h2 className="text-3xl uppercase text-[#fffffe]">Habit</h2>
         </div>
-        <section className="border-l border-black">
+        <section className=" ">
           <ol className={`grid ${gridOfTheMonth(currentMonth)} `}>
             {days.map((day) => (
               <li
                 key={day.toString()}
                 className={`${
-                  isToday(day) && "bg-orange-500"
-                } border-r border-black text-center uppercase`}
+                  isToday(day) && "bg-[#ffd803]"
+                } text-center uppercase`}
               >
                 <div
-                  className={`grid grid-cols-1 ${
+                  className={`grid grid-cols-1 text-sm text-[#fffffe] ${
                     isSunday(day) && "bg-rose-600"
                   }`}
                 >
@@ -117,11 +120,11 @@ const Home = () => {
       <article className=" ">
         <ul>
           {habits.data?.map(({ title, id }) => (
-            <li key={id} className="w-full">
+            <li key={id} className="mb-2 w-full bg-[#e3f6f5] shadow">
               <div className="grid grid-cols-[300px_auto]">
                 <HabitTitle id={id}>{title}</HabitTitle>
 
-                <section className="border-l border-black">
+                <section>
                   <HabitRecords
                     key={id}
                     demoHabitId={id}
@@ -139,7 +142,11 @@ const Home = () => {
   );
 };
 
-const HabitTitle = ({ children, id }: { children: string; id: string }) => {
+interface HabitTitleProps {
+  children: string;
+  id: string;
+}
+const HabitTitle = ({ children, id }: HabitTitleProps) => {
   const utils = trpc.useContext();
 
   const deleteHabit = trpc.demo.deleteHabit.useMutation({
@@ -167,8 +174,8 @@ const HabitTitle = ({ children, id }: { children: string; id: string }) => {
   }
 
   return (
-    <p className="flex justify-between border-b border-l border-black pl-2 font-semibold">
-      {children}
+    <div className="flex justify-between pl-2 font-semibold">
+      <p className="text-[#2d334a]">{children}</p>
       <span className="pr-1 text-red-500">
         <button onClick={handleDelete} disabled={deleteHabit.isLoading}>
           {deleteHabit.isLoading ? (
@@ -191,7 +198,7 @@ const HabitTitle = ({ children, id }: { children: string; id: string }) => {
           )}
         </button>
       </span>
-    </p>
+    </div>
   );
 };
 
@@ -240,11 +247,11 @@ const AddHabit = ({ index }: { index: string }) => {
               onChange={(e) => setTitle(e.target.value)}
               value={title}
               placeholder="Habit Title"
-              className="border-b border-l border-black pl-2"
+              className="pl-2 focus:rounded-none"
             />
             <button
               type="submit"
-              className="w-full bg-green-300 uppercase
+              className="ml-2 w-full bg-green-400 font-bold uppercase
                  text-green-900 hover:bg-green-600 hover:text-green-100"
             >
               {createHabit.isLoading ? "Loading" : "Add New Habit"}
@@ -252,7 +259,7 @@ const AddHabit = ({ index }: { index: string }) => {
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="w-full bg-red-300 uppercase 
+              className="mt-2 w-full bg-red-400 font-bold uppercase 
                 text-red-900 hover:bg-red-600 hover:text-red-100"
             >
               Cancel
@@ -269,11 +276,13 @@ const AddHabit = ({ index }: { index: string }) => {
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          className="flex justify-start border-l border-b border-black bg-green-400 pl-2"
+          className="flex justify-start bg-green-400"
         >
-          <p>Add new Habit</p>
+          <p className="pl-2 font-bold uppercase text-green-900">
+            Add new Habit
+          </p>
         </button>
-        <section className="border-x border-b border-black"></section>
+        <section className=" "></section>
       </div>
     </li>
   );
@@ -288,7 +297,7 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
   // Query and Mutation
   const utils = trpc.useContext();
 
-  const { data: records, isFetching } = trpc.demo.getRecords.useQuery({
+  const { data: records } = trpc.demo.getRecords.useQuery({
     month,
     demoHabitId,
   });
@@ -347,12 +356,12 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
     <li
       key={date}
       className={`${
-        isToday(days?.[index] as Date) ? "bg-orange-500" : bgColor(index)
+        isToday(days?.[index] as Date) && "bg-[#ffd803]"
       } text-center hover:bg-blue-400`}
     >
       <button
         type="button"
-        className="w-full border-b border-r border-black"
+        className="w-full "
         onClick={() => handleClick(id, date, updateValues(value))}
         disabled={createRecord.isLoading || updateRecord.isLoading}
       >
@@ -361,19 +370,9 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
     </li>
   ));
 
-  // Loading State
-  if (isFetching || createRecord.isLoading || updateRecord.isLoading) {
-    return <Loading month={month} days={days} />;
-  }
-
-  // Empty array or no data from database
-  if (records?.length === 0) {
-    return <ol className={`grid ${gridOfTheMonth(month)} `}>{component}</ol>;
-  }
-
   return (
     <Suspense fallback={<Loading month={month} days={days} />}>
-      <ol className={`grid ${gridOfTheMonth(month)} `}>{component}</ol>
+      <ol className={`grid ${gridOfTheMonth(month)}`}>{component}</ol>
     </Suspense>
   );
 };
@@ -385,11 +384,11 @@ interface LoadingProps {
 const Loading = ({ month, days }: LoadingProps) => {
   return (
     <ol className={`grid ${gridOfTheMonth(month)}`}>
-      {days.map((day, index) => (
+      {days.map((day) => (
         <li
           key={day.toString()}
           className={`${
-            isToday(day) ? "bg-orange-500" : bgColor(index)
+            isToday(day) && "bg-[#ffd803]"
           } animate-pulse text-center hover:bg-blue-400`}
         >
           <button
