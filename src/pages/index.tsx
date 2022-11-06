@@ -13,6 +13,7 @@ import {
   startOfToday,
   startOfYear,
 } from "date-fns";
+import Head from "next/head";
 import { Suspense, useState } from "react";
 import { FullScreenLoader } from "../components/Loader";
 import { gridOfTheMonth } from "../utils/style";
@@ -42,7 +43,7 @@ const Home = () => {
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
-  function getNumberFromMnothlyDate(date: string) {
+  function getNumberFromMonthlyDate(date: string) {
     return Number(format(parse(date, "MMMM-yyyy", new Date()), "M"));
   }
 
@@ -52,10 +53,10 @@ const Home = () => {
     if (
       index < Number(format(parse(currentMonth, "MMMM-yyyy", new Date()), "M"))
     ) {
-      month = Math.abs(index - getNumberFromMnothlyDate(currentMonth)) * -1;
+      month = Math.abs(index - getNumberFromMonthlyDate(currentMonth)) * -1;
       firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
     }
-    month = index - getNumberFromMnothlyDate(currentMonth);
+    month = index - getNumberFromMonthlyDate(currentMonth);
     firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
@@ -65,104 +66,115 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[##fffffe] px-4">
-      <header className="mb-4 grid grid-cols-1 pt-4">
-        <h1
-          className="mb-4 flex items-start justify-start font-serif text-7xl 
+    <>
+      <Head>
+        <title>Habit Tracker</title>
+        <meta
+          name="description"
+          content="Open source habit tracker app that helps you to build good habits, reach your goals."
+        />
+        <meta name="keywords" content="habit, habit-tracker" />
+      </Head>
+
+      <div className="min-h-screen bg-[##fffffe] px-4">
+        <header className="mb-4 grid grid-cols-1 pt-4">
+          <h1
+            className="mb-4 flex items-start justify-start font-serif text-7xl 
         uppercase text-[#272343]"
-        >
-          Habit Tracker
-        </h1>
-        <h2 className="text-5xl uppercase text-[#272343]">
-          {format(parse(currentMonth, "MMMM-yyyy", new Date()), "MMMM yyyy")}
-        </h2>
-        <div className="grid grid-cols-[300px_auto] text-[#272343]">
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center justify-center">
-            <button onClick={prevYear} className="pb-2 text-4xl font-bold">
-              {"<"}
-            </button>
-            <p className="text-center text-3xl uppercase">
-              {format(parse(currentMonth, "MMMM-yyyy", new Date()), "yyyy")}
-            </p>
-            <button onClick={nextYear} className="pb-2 text-4xl font-bold">
-              {">"}
-            </button>
-          </div>
-          <ol className="grid grid-cols-12 items-center justify-center">
-            {eachMonthOfInterval({
-              start: startOfYear(days[1] as Date),
-              end: endOfYear(days[10] as Date),
-            }).map((month, index) => (
-              <li
-                key={month.toString()}
-                className="text-2xl uppercase hover:bg-blue-300"
-              >
-                <button
-                  onClick={() => changeMonth(index + 1)}
-                  className={`block w-full pl-2 
+          >
+            Habit Tracker
+          </h1>
+          <h2 className="text-5xl uppercase text-[#272343]">
+            {format(parse(currentMonth, "MMMM-yyyy", new Date()), "MMMM yyyy")}
+          </h2>
+          <div className="grid grid-cols-[300px_auto] text-[#272343]">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center justify-center">
+              <button onClick={prevYear} className="pb-2 text-4xl font-bold">
+                {"<"}
+              </button>
+              <p className="text-center text-3xl uppercase">
+                {format(parse(currentMonth, "MMMM-yyyy", new Date()), "yyyy")}
+              </p>
+              <button onClick={nextYear} className="pb-2 text-4xl font-bold">
+                {">"}
+              </button>
+            </div>
+            <ol className="grid grid-cols-12 items-center justify-center">
+              {eachMonthOfInterval({
+                start: startOfYear(days[1] as Date),
+                end: endOfYear(days[10] as Date),
+              }).map((month, index) => (
+                <li
+                  key={month.toString()}
+                  className="text-2xl uppercase hover:bg-blue-300"
+                >
+                  <button
+                    onClick={() => changeMonth(index + 1)}
+                    className={`block w-full pl-2 
                   ${
                     getMonth(firstDayCurrentMonth) === index && "bg-[#ffd803]"
                   } `}
+                  >
+                    {format(month, "MMM")}
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </header>
+        <main className="mb-4 grid grid-cols-[300px_auto] bg-[#272343]">
+          <div className="flex items-center justify-start pl-2 align-middle">
+            <h2 className="text-3xl uppercase text-[#fffffe]">Habit</h2>
+          </div>
+          <section className=" ">
+            <ol className={`grid ${gridOfTheMonth(currentMonth)} `}>
+              {days.map((day) => (
+                <li
+                  key={day.toString()}
+                  className={`${
+                    isToday(day) && "bg-[#ffd803]"
+                  } text-center uppercase`}
                 >
-                  {format(month, "MMM")}
-                </button>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </header>
-      <main className="mb-4 grid grid-cols-[300px_auto] bg-[#272343]">
-        <div className="flex items-center justify-start pl-2 align-middle">
-          <h2 className="text-3xl uppercase text-[#fffffe]">Habit</h2>
-        </div>
-        <section className=" ">
-          <ol className={`grid ${gridOfTheMonth(currentMonth)} `}>
-            {days.map((day) => (
-              <li
-                key={day.toString()}
-                className={`${
-                  isToday(day) && "bg-[#ffd803]"
-                } text-center uppercase`}
-              >
-                <div
-                  className={`grid grid-cols-1 text-sm text-[#fffffe] ${
-                    isSunday(day) && "bg-rose-600"
-                  }`}
-                >
-                  <time dateTime={format(day, "yyyy-MM-dd")}>
-                    {format(day, "E").slice(0, 2)}
-                  </time>
-                  <time dateTime={format(day, "yyyy-MM-dd")}>
-                    {format(day, "d")}
-                  </time>
+                  <div
+                    className={`grid grid-cols-1 text-sm text-[#fffffe] ${
+                      isSunday(day) && "bg-rose-600"
+                    }`}
+                  >
+                    <time dateTime={format(day, "yyyy-MM-dd")}>
+                      {format(day, "E").slice(0, 2)}
+                    </time>
+                    <time dateTime={format(day, "yyyy-MM-dd")}>
+                      {format(day, "d")}
+                    </time>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </main>
+        <article className=" ">
+          <ul>
+            {habits.data?.map((habit) => (
+              <li key={habit.id} className="mb-2 w-full bg-[#e3f6f5] shadow">
+                <div className="grid grid-cols-[300px_auto]">
+                  <HabitTitle {...habit} />
+
+                  <section>
+                    <HabitRecords
+                      days={days}
+                      key={habit.id}
+                      month={currentMonth}
+                      demoHabitId={habit.id}
+                    />
+                  </section>
                 </div>
               </li>
             ))}
-          </ol>
-        </section>
-      </main>
-      <article className=" ">
-        <ul>
-          {habits.data?.map((habit) => (
-            <li key={habit.id} className="mb-2 w-full bg-[#e3f6f5] shadow">
-              <div className="grid grid-cols-[300px_auto]">
-                <HabitTitle {...habit} />
-
-                <section>
-                  <HabitRecords
-                    days={days}
-                    key={habit.id}
-                    month={currentMonth}
-                    demoHabitId={habit.id}
-                  />
-                </section>
-              </div>
-            </li>
-          ))}
-          <AddHabit index={habits?.data?.length.toString() as string} />
-        </ul>
-      </article>
-    </div>
+            <AddHabit index={habits?.data?.length.toString() as string} />
+          </ul>
+        </article>
+      </div>
+    </>
   );
 };
 
@@ -296,7 +308,7 @@ const HabitTitle = ({ title, id, filterId }: HabitTitleProps) => {
       className="grid grid-cols-[1fr_auto_auto] justify-between pl-2 
     font-semibold hover:bg-[#bae8e8]"
     >
-      <p className="text-[#272343] uppercase">{title}</p>
+      <p className="uppercase text-[#272343]">{title}</p>
       <button
         onClick={() => setShowForm(true)}
         className="text-[#2d334a] hover:bg-green-100 hover:text-green-500"
@@ -421,7 +433,7 @@ const AddHabit = ({ index }: { index: string }) => {
           className="flex justify-start"
         >
           <p
-            className="bg-green-400 w-full pl-2 font-bold uppercase text-green-900 
+            className="w-full bg-green-400 pl-2 font-bold uppercase text-green-900 
           hover:bg-green-600 hover:text-green-100"
           >
             Add new Habit
@@ -439,6 +451,7 @@ interface HabitRecordsProps {
   days: Date[];
 }
 const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
+
   // Query and Mutation
   const utils = trpc.useContext();
 
@@ -461,6 +474,7 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
 
   // Creating new Data
   const newRecords: DemoRecord[] = [];
+  
   for (let index = 0; index < days.length; index++) {
     const objIndex = records?.findIndex(
       (obj: { date: string }) => Number(obj.date) === index + 1
