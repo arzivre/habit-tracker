@@ -296,7 +296,7 @@ const HabitTitle = ({ title, id, filterId }: HabitTitleProps) => {
       className="grid grid-cols-[1fr_auto_auto] justify-between pl-2 
     font-semibold hover:bg-[#bae8e8]"
     >
-      <p className="text-[#272343]">{title}</p>
+      <p className="text-[#272343] uppercase">{title}</p>
       <button
         onClick={() => setShowForm(true)}
         className="text-[#2d334a] hover:bg-green-100 hover:text-green-500"
