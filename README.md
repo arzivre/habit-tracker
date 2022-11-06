@@ -16,6 +16,8 @@ Open source habit tracker app that helps you to build good habits, reach your go
 
 - Track habits
 - Monthly view
+- Change current Month
+- Change current year to Next/Previous year
 
 
 ## Demo
