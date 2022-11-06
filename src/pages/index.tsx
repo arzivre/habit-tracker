@@ -15,7 +15,7 @@ import {
 } from "date-fns";
 import { Suspense, useState } from "react";
 import { FullScreenLoader } from "../components/Loader";
-import { bgColor, gridOfTheMonth } from "../utils/style";
+import { gridOfTheMonth } from "../utils/style";
 import { trpc } from "../utils/trpc";
 
 const Home = () => {
@@ -32,13 +32,31 @@ const Home = () => {
     end: endOfMonth(firstDayCurrentMonth),
   });
 
-  function previousMonth() {
-    const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
+  function prevYear() {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: -12 });
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
-  function nextMonth() {
-    const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
+  function nextYear() {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: 12 });
+    setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
+  }
+
+  function getNumberFromMnothlyDate(date: string) {
+    return Number(format(parse(date, "MMMM-yyyy", new Date()), "M"));
+  }
+
+  function changeMonth(index: number) {
+    let month: number;
+    let firstDayNextMonth;
+    if (
+      index < Number(format(parse(currentMonth, "MMMM-yyyy", new Date()), "M"))
+    ) {
+      month = Math.abs(index - getNumberFromMnothlyDate(currentMonth)) * -1;
+      firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
+    }
+    month = index - getNumberFromMnothlyDate(currentMonth);
+    firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
@@ -55,18 +73,18 @@ const Home = () => {
         >
           Habit Tracker
         </h1>
+        <h2 className="text-5xl uppercase text-[#272343]">
+          {format(parse(currentMonth, "MMMM-yyyy", new Date()), "MMMM yyyy")}
+        </h2>
         <div className="grid grid-cols-[300px_auto] text-[#272343]">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center justify-center">
-            <button onClick={previousMonth} className="pb-2 text-4xl font-bold">
+            <button onClick={prevYear} className="pb-2 text-4xl font-bold">
               {"<"}
             </button>
-            <p className="text-center text-2xl uppercase">
-              {format(
-                parse(currentMonth, "MMMM-yyyy", new Date()),
-                "MMMM yyyy"
-              )}
+            <p className="text-center text-3xl uppercase">
+              {format(parse(currentMonth, "MMMM-yyyy", new Date()), "yyyy")}
             </p>
-            <button onClick={nextMonth} className="pb-2 text-4xl font-bold">
+            <button onClick={nextYear} className="pb-2 text-4xl font-bold">
               {">"}
             </button>
           </div>
@@ -77,11 +95,17 @@ const Home = () => {
             }).map((month, index) => (
               <li
                 key={month.toString()}
-                className={`${
-                  getMonth(firstDayCurrentMonth) === index && "bg-[#ffd803]"
-                } pl-2 text-2xl uppercase hover:bg-blue-300`}
+                className="text-2xl uppercase hover:bg-blue-300"
               >
-                {format(month, "MMM")}
+                <button
+                  onClick={() => changeMonth(index + 1)}
+                  className={`block w-full pl-2 
+                  ${
+                    getMonth(firstDayCurrentMonth) === index && "bg-[#ffd803]"
+                  } `}
+                >
+                  {format(month, "MMM")}
+                </button>
               </li>
             ))}
           </ol>
@@ -227,7 +251,7 @@ const HabitTitle = ({ title, id, filterId }: HabitTitleProps) => {
         <button
           type="submit"
           className="ml-2 w-full bg-green-400 font-bold uppercase
-                 text-green-900 hover:bg-green-600 hover:text-green-100"
+          text-green-900 hover:bg-green-600 hover:text-green-100"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -394,9 +418,12 @@ const AddHabit = ({ index }: { index: string }) => {
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          className="flex justify-start bg-green-400"
+          className="flex justify-start"
         >
-          <p className="pl-2 font-bold uppercase text-green-900">
+          <p
+            className="bg-green-400 w-full pl-2 font-bold uppercase text-green-900 
+          hover:bg-green-600 hover:text-green-100"
+          >
             Add new Habit
           </p>
         </button>
