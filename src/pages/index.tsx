@@ -174,6 +174,15 @@ const Home = () => {
           </ul>
         </article>
       </div>
+      <p className="my-6 text-center text-[#272343] hover:text-blue-600">
+        <a
+          href="https://github.com/arzivre/habit-tracker"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          This App is open source on GitHub
+        </a>
+      </p>
     </>
   );
 };
@@ -451,7 +460,6 @@ interface HabitRecordsProps {
   days: Date[];
 }
 const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
-
   // Query and Mutation
   const utils = trpc.useContext();
 
@@ -474,7 +482,7 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
 
   // Creating new Data
   const newRecords: DemoRecord[] = [];
-  
+
   for (let index = 0; index < days.length; index++) {
     const objIndex = records?.findIndex(
       (obj: { date: string }) => Number(obj.date) === index + 1
@@ -515,7 +523,7 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
     <li
       key={date}
       className={`${
-        isToday(days?.[index] as Date) && "bg-[#ffd803]"
+        isToday(days?.[index] as Date) && "bg-yellow-200"
       } text-center hover:bg-blue-400`}
     >
       <button
