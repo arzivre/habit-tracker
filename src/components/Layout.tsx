@@ -1,23 +1,40 @@
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { Suspense, ReactNode } from "react";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <div className=" ">
-      <section className="border-b-2 border-white bg-blue-900 px-4">
-        <nav className="mx-auto flex max-w-screen-2xl flex-row text-2xl uppercase text-blue-50">
-          <div className="basis-1/3 py-5 pr-3">
+    <div className="">
+      <nav className="border-b-2 border-white bg-blue-900 px-4">
+        <ol className="mx-auto flex max-w-screen-2xl flex-row text-2xl uppercase text-blue-50">
+          <li className="basis-1/4 py-5 pr-3">
             <Link href="/">Habit Tracker</Link>
-          </div>
-          <div className="basis-1/3 border-l-[0.5px] border-l-blue-700 py-5 px-3">
+          </li>
+          <li className="flex basis-1/2 justify-center border-l-[0.5px] border-l-blue-700 py-5 px-3">
             sosmed
-          </div>
-          <div className="basis-1/3 border-l-[0.5px] border-l-blue-700 py-5 px-3">
-            <Link href="/signin">Sign In</Link>
-          </div>
-        </nav>
-      </section>
+          </li>
+          <li className="flex basis-1/2 justify-between border-l-[0.5px] border-l-blue-700 py-5 px-3">
+            <Suspense fallback={<p>Loading</p>}>
+              <Avatar />
+            </Suspense>
+          </li>
+        </ol>
+      </nav>
       {children}
+    </div>
+  );
+};
+
+const Avatar = () => {
+  const { data: sessionData } = useSession();
+  if (!sessionData) {
+    return <Link href="/signin">Sign In</Link>;
+  }
+
+  return (
+    <div className="flex w-full justify-between">
+      <p>{sessionData?.user?.name}</p>
+      <p>Sign Out</p>
     </div>
   );
 };
