@@ -1,13 +1,19 @@
 import { signIn, signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { trpc } from "../utils/trpc";
 
 const Signin = () => {
   const { data: sessionData } = useSession();
+  const router = useRouter();
 
   const { data: secretMessage } = trpc.auth.getSecretMessage.useQuery(
     undefined, // no input
     { enabled: sessionData?.user !== undefined }
   );
+  
+  if (sessionData) {
+    return router.replace(`/habit-tracker/${sessionData?.user?.id}`);
+  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-2">
