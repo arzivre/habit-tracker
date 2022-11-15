@@ -11,7 +11,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             <Link href="/">Habit Tracker</Link>
           </li>
           <li className="flex basis-1/2 justify-center border-l-[0.5px] border-l-blue-700 py-5 px-3">
-            sosmed
+            <span className=" opacity-0">sosmed</span>
           </li>
           <li className="flex basis-1/2 justify-between border-l-[0.5px] border-l-blue-700 py-5 px-3">
             <Suspense fallback={<p>Loading</p>}>
