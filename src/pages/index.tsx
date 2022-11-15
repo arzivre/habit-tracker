@@ -79,7 +79,7 @@ const Home = () => {
       <div className="min-h-screen bg-[##fffffe] px-4">
         <header className="mb-4 grid grid-cols-1 pt-4">
           <h1
-            className="mb-4 flex items-start justify-start font-serif text-7xl 
+            className="mb-4 flex items-start justify-start font-serif text-1xl 
         uppercase text-[#272343]"
           >
             Habit Tracker
