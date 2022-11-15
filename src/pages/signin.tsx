@@ -10,18 +10,13 @@ const Signin = () => {
     undefined, // no input
     { enabled: sessionData?.user !== undefined }
   );
-  
+
   if (sessionData) {
     return router.replace(`/habit-tracker/${sessionData?.user?.id}`);
   }
 
   return (
     <div className="flex flex-col items-center justify-center gap-2">
-      {sessionData && (
-        <p className="text-2xl text-blue-500">
-          Logged in as {sessionData?.user?.name}
-        </p>
-      )}
       {secretMessage && (
         <p className="text-2xl text-blue-500">{secretMessage}</p>
       )}

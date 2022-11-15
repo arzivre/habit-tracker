@@ -1,4 +1,4 @@
-import type { DemoHabit, DemoRecord, Habit } from "@prisma/client";
+import type { DemoRecord } from "@prisma/client";
 import {
   add,
   eachDayOfInterval,
@@ -11,7 +11,7 @@ import {
   isToday,
   parse,
   startOfToday,
-  startOfYear,
+  startOfYear
 } from "date-fns";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -20,9 +20,10 @@ import { FullScreenLoader } from "../../components/Loader";
 import { gridOfTheMonth } from "../../utils/style";
 import { trpc } from "../../utils/trpc";
 
-const Home = () => {
+const HabitTracker = () => {
   const router = useRouter();
   const { userId } = router.query;
+  
   const habits = trpc.habits.getHabits.useQuery(
     { userId: userId as string },
     { enabled: !!userId, }
@@ -579,4 +580,4 @@ const Loading = ({ month, days }: LoadingProps) => {
   );
 };
 
-export default Home;
+export default HabitTracker;
