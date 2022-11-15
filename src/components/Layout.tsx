@@ -33,7 +33,9 @@ const Avatar = () => {
 
   return (
     <div className="flex w-full justify-between">
-      <p>{sessionData?.user?.name}</p>
+      <p>
+        <Link href="/profile">{sessionData?.user?.name}</Link>
+      </p>
       <p>Sign Out</p>
     </div>
   );
