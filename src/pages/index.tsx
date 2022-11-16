@@ -1,17 +1,10 @@
 import type { DemoHabit, DemoRecord } from "@prisma/client";
 import {
   add,
-  eachDayOfInterval,
-  eachMonthOfInterval,
-  endOfMonth,
-  endOfYear,
-  format,
-  getMonth,
-  isSunday,
+  eachDayOfInterval, endOfMonth, format, isSunday,
   isToday,
   parse,
-  startOfToday,
-  startOfYear,
+  startOfToday
 } from "date-fns";
 import Head from "next/head";
 import { Suspense, useState } from "react";
@@ -33,33 +26,33 @@ const Home = () => {
     end: endOfMonth(firstDayCurrentMonth),
   });
 
-  function prevYear() {
-    const firstDayNextMonth = add(firstDayCurrentMonth, { months: -12 });
+  function prevMonth() {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
-  function nextYear() {
-    const firstDayNextMonth = add(firstDayCurrentMonth, { months: 12 });
+  function nextMonth() {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
-  function getNumberFromMonthlyDate(date: string) {
-    return Number(format(parse(date, "MMMM-yyyy", new Date()), "M"));
-  }
+  // function getNumberFromMonthlyDate(date: string) {
+  //   return Number(format(parse(date, "MMMM-yyyy", new Date()), "M"));
+  // }
 
-  function changeMonth(index: number) {
-    let month: number;
-    let firstDayNextMonth;
-    if (
-      index < Number(format(parse(currentMonth, "MMMM-yyyy", new Date()), "M"))
-    ) {
-      month = Math.abs(index - getNumberFromMonthlyDate(currentMonth)) * -1;
-      firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
-    }
-    month = index - getNumberFromMonthlyDate(currentMonth);
-    firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
-    setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
-  }
+  // function changeMonth(index: number) {
+  //   let month: number;
+  //   let firstDayNextMonth;
+  //   if (
+  //     index < Number(format(parse(currentMonth, "MMMM-yyyy", new Date()), "M"))
+  //   ) {
+  //     month = Math.abs(index - getNumberFromMonthlyDate(currentMonth)) * -1;
+  //     firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
+  //   }
+  //   month = index - getNumberFromMonthlyDate(currentMonth);
+  //   firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
+  //   setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
+  // }
 
   if (habits.isLoading) {
     return <FullScreenLoader />;
@@ -76,68 +69,60 @@ const Home = () => {
         <meta name="keywords" content="habit, habit-tracker" />
       </Head>
 
-      <div className="min-h-screen bg-[##fffffe] px-4">
-        <header className="mb-4 grid grid-cols-1 pt-4">
-          <h1
-            className="mb-4 flex items-start justify-start font-serif text-1xl 
-        uppercase text-[#272343]"
-          >
-            Habit Tracker
-          </h1>
-          <h2 className="text-5xl uppercase text-[#272343]">
-            {format(parse(currentMonth, "MMMM-yyyy", new Date()), "MMMM yyyy")}
-          </h2>
-          <div className="grid grid-cols-[300px_auto] text-[#272343]">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center justify-center">
-              <button onClick={prevYear} className="pb-2 text-4xl font-bold">
+      <div className="min-h-screen bg-[##fffffe]">
+        <div className="text-md flex justify-center border-b-[0.5px] py-2 ">
+          <p className="text-gray-800">
+            This page is only for{" "}
+            <span className="font-bold text-black">&nbsp;demo&nbsp;</span>
+            purpose, anyone can edit.
+          </p>
+          <p className="text-black">
+            <span className="font-bold">&nbsp;Sign in&nbsp;</span> to save your
+            data
+          </p>
+        </div>
+        <header className="mb-4 flex flex-row pt-4">
+          <section className="flex basis-3/4 flex-row">
+            <h1 className=" pl-4 text-3xl font-bold uppercase text-black">
+              {format(firstDayCurrentMonth, "MMMM")}
+            </h1>
+            <p className=" mx-2 text-3xl font-bold uppercase  text-[#272343] ">
+              /
+            </p>
+            <p className=" text-2xl font-bold uppercase text-gray-500">
+              {format(firstDayCurrentMonth, "yyyy")}
+            </p>
+          </section>
+          <div className="flex basis-1/4 gap-4 px-4 text-gray-600">
+            <div
+              className="grid w-full grid-cols-[1fr_1fr] items-center
+             justify-center rounded"
+            >
+              <button onClick={prevMonth} className="pb-2 text-3xl font-bold">
                 {"<"}
               </button>
-              <p className="text-center text-3xl uppercase">
-                {format(parse(currentMonth, "MMMM-yyyy", new Date()), "yyyy")}
-              </p>
-              <button onClick={nextYear} className="pb-2 text-4xl font-bold">
+              <button onClick={nextMonth} className="pb-2 text-3xl font-bold">
                 {">"}
               </button>
             </div>
-            <ol className="grid grid-cols-12 items-center justify-center">
-              {eachMonthOfInterval({
-                start: startOfYear(days[1] as Date),
-                end: endOfYear(days[10] as Date),
-              }).map((month, index) => (
-                <li
-                  key={month.toString()}
-                  className="text-2xl uppercase hover:bg-blue-300"
-                >
-                  <button
-                    onClick={() => changeMonth(index + 1)}
-                    className={`block w-full pl-2 
-                  ${
-                    getMonth(firstDayCurrentMonth) === index && "bg-[#ffd803]"
-                  } `}
-                  >
-                    {format(month, "MMM")}
-                  </button>
-                </li>
-              ))}
-            </ol>
           </div>
         </header>
-        <main className="mb-4 grid grid-cols-[300px_auto] bg-[#272343]">
-          <div className="flex items-center justify-start pl-2 align-middle">
-            <h2 className="text-3xl uppercase text-[#fffffe]">Habit</h2>
+        <main className="flex w-full flex-row bg-black py-0.5 text-white">
+          <div className="flex basis-1/4 items-center justify-start pl-4 align-middle">
+            <h2 className="text-3xl uppercase ">Habit</h2>
           </div>
-          <section className=" ">
+          <section className="basis-3/4">
             <ol className={`grid ${gridOfTheMonth(currentMonth)} `}>
               {days.map((day) => (
                 <li
                   key={day.toString()}
                   className={`${
-                    isToday(day) && "bg-[#ffd803]"
-                  } text-center uppercase`}
+                    isToday(day) && "bg-[#ffd803] text-black"
+                  } text-center font-semibold uppercase`}
                 >
                   <div
-                    className={`grid grid-cols-1 text-sm text-[#fffffe] ${
-                      isSunday(day) && "bg-rose-600"
+                    className={`grid grid-cols-1 text-sm ${
+                      isSunday(day) ? "text-rose-600" : ""
                     }`}
                   >
                     <time dateTime={format(day, "yyyy-MM-dd")}>
@@ -155,11 +140,14 @@ const Home = () => {
         <article className=" ">
           <ul>
             {habits.data?.map((habit) => (
-              <li key={habit.id} className="mb-2 w-full bg-[#e3f6f5] shadow">
-                <div className="grid grid-cols-[300px_auto]">
+              <li
+                key={habit.id}
+                className="w-full border-b-[0.5px]  border-gray-300"
+              >
+                <div className="flex flex-row ">
                   <HabitTitle {...habit} />
 
-                  <section>
+                  <section className="flex-grow">
                     <HabitRecords
                       days={days}
                       key={habit.id}
@@ -259,14 +247,14 @@ const HabitTitle = ({ title, id, filterId }: HabitTitleProps) => {
     return (
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-[1fr_auto_auto] bg-white"
+        className="grid grid-cols-[1fr_auto_auto] bg-white pl-4"
       >
         <input
           type="text"
           onChange={(e) => setNewTitle(e.target.value)}
           value={newTitle}
           placeholder="Habit Title"
-          className="pl-2 focus:rounded-none"
+          className="pl-4 focus:rounded-none"
         />
 
         <button
@@ -314,7 +302,7 @@ const HabitTitle = ({ title, id, filterId }: HabitTitleProps) => {
 
   return (
     <div
-      className="grid grid-cols-[1fr_auto_auto] justify-between pl-2 
+      className="grid basis-1/4 grid-cols-[1fr_auto_auto] justify-between pl-4 
     font-semibold hover:bg-[#bae8e8]"
     >
       <p className="uppercase text-[#272343]">{title}</p>
@@ -524,11 +512,11 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
       key={date}
       className={`${
         isToday(days?.[index] as Date) && "bg-yellow-200"
-      } text-center hover:bg-blue-400`}
+      } border-r-[0.5px] border-gray-200 text-center hover:bg-blue-400`}
     >
       <button
         type="button"
-        className="w-full "
+        className="w-full"
         onClick={() => handleClick(id, date, updateValues(value))}
         disabled={createRecord.isLoading || updateRecord.isLoading}
       >
