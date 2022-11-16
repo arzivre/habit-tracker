@@ -14,9 +14,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
             <span className="opacity-0">sosmed</span>
           </li>
           <li className="flex basis-1/4 justify-between border-x-[0.5px] border-b-[0.5px] border-gray-300 py-5 pl-3 pr-4">
-            <Suspense fallback={<p>Loading</p>}>
+            {/* <Suspense fallback={<p>Loading</p>}>
               <Avatar />
-            </Suspense>
+            </Suspense> */}
+            <p>
+              Create account Coming soon
+            </p>
           </li>
         </ol>
       </nav>
