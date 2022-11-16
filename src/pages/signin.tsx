@@ -12,7 +12,7 @@ const Signin = () => {
   );
 
   if (sessionData) {
-    return router.replace(`/habit-tracker/${sessionData?.user?.id}`);
+    return router.replace(`/habit-tracker`);
   }
 
   return (

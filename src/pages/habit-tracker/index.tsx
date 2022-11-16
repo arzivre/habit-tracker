@@ -11,22 +11,21 @@ import {
   isToday,
   parse,
   startOfToday,
-  startOfYear
+  startOfYear,
 } from "date-fns";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { Suspense, useState } from "react";
 import { FullScreenLoader } from "../../components/Loader";
 import { gridOfTheMonth } from "../../utils/style";
 import { trpc } from "../../utils/trpc";
 
 const HabitTracker = () => {
-  const router = useRouter();
-  const { userId } = router.query;
-  
+  const { data: sessionData, status } = useSession();
+
   const habits = trpc.habits.getHabits.useQuery(
-    { userId: userId as string },
-    { enabled: !!userId, }
+    { userId: sessionData?.user?.id as string },
+    { enabled: sessionData?.user !== undefined }
   );
 
   const today = startOfToday();
@@ -68,7 +67,12 @@ const HabitTracker = () => {
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
-  if (habits.isLoading) {
+
+  if (status === "unauthenticated") {
+    return <p>Access Denied</p>;
+  }
+
+  if (habits.isLoading || status === "loading") {
     return <FullScreenLoader />;
   }
 
@@ -179,7 +183,7 @@ const HabitTracker = () => {
             ))}
             <AddHabit
               index={habits?.data?.length.toString() as string}
-              userId={userId as string}
+              userId={sessionData?.user?.id as string}
             />
           </ul>
         </article>
