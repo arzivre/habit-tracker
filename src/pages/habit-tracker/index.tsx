@@ -1,17 +1,13 @@
-import type { DemoRecord } from "@prisma/client";
+import type { DemoRecord, Habit, Record } from "@prisma/client";
 import {
   add,
   eachDayOfInterval,
-  eachMonthOfInterval,
   endOfMonth,
-  endOfYear,
   format,
-  getMonth,
   isSunday,
   isToday,
   parse,
   startOfToday,
-  startOfYear,
 } from "date-fns";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
@@ -23,7 +19,7 @@ import { trpc } from "../../utils/trpc";
 const HabitTracker = () => {
   const { data: sessionData, status } = useSession();
 
-  const habits = trpc.habits.getHabits.useQuery(
+  const habits = trpc.habits.getAll.useQuery(
     { userId: sessionData?.user?.id as string },
     { enabled: sessionData?.user !== undefined }
   );
@@ -39,34 +35,15 @@ const HabitTracker = () => {
     end: endOfMonth(firstDayCurrentMonth),
   });
 
-  function prevYear() {
-    const firstDayNextMonth = add(firstDayCurrentMonth, { months: -12 });
+  function prevMonth() {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
-  function nextYear() {
-    const firstDayNextMonth = add(firstDayCurrentMonth, { months: 12 });
+  function nextMonth() {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
-
-  function getNumberFromMonthlyDate(date: string) {
-    return Number(format(parse(date, "MMMM-yyyy", new Date()), "M"));
-  }
-
-  function changeMonth(index: number) {
-    let month: number;
-    let firstDayNextMonth;
-    if (
-      index < Number(format(parse(currentMonth, "MMMM-yyyy", new Date()), "M"))
-    ) {
-      month = Math.abs(index - getNumberFromMonthlyDate(currentMonth)) * -1;
-      firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
-    }
-    month = index - getNumberFromMonthlyDate(currentMonth);
-    firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
-    setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
-  }
-
 
   if (status === "unauthenticated") {
     return <p>Access Denied</p>;
@@ -87,68 +64,49 @@ const HabitTracker = () => {
         <meta name="keywords" content="habit, habit-tracker" />
       </Head>
 
-      <div className="min-h-screen bg-[##fffffe] px-4">
-        <header className="mb-4 grid grid-cols-1 pt-4">
-          <h1
-            className="text-1xl mb-4 flex items-start justify-start font-serif 
-        uppercase text-[#272343]"
-          >
-            Habit Tracker
-          </h1>
-          <h2 className="text-5xl uppercase text-[#272343]">
-            {format(parse(currentMonth, "MMMM-yyyy", new Date()), "MMMM yyyy")}
-          </h2>
-          <div className="grid grid-cols-[300px_auto] text-[#272343]">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center justify-center">
-              <button onClick={prevYear} className="pb-2 text-4xl font-bold">
+      <div className="min-h-screen bg-[##fffffe]">
+        <header className="mb-4 flex flex-row pt-4">
+          <section className="flex basis-3/4 flex-row">
+            <h1 className=" pl-4 text-3xl font-bold uppercase text-black">
+              {format(firstDayCurrentMonth, "MMMM")}
+            </h1>
+            <p className=" mx-2 text-3xl font-bold uppercase  text-[#272343] ">
+              /
+            </p>
+            <p className=" text-2xl font-bold uppercase text-gray-500">
+              {format(firstDayCurrentMonth, "yyyy")}
+            </p>
+          </section>
+          <div className="flex basis-1/4 gap-4 px-4 text-gray-600">
+            <div
+              className="grid w-full grid-cols-[1fr_1fr] items-center
+             justify-center rounded"
+            >
+              <button onClick={prevMonth} className="pb-2 text-3xl font-bold">
                 {"<"}
               </button>
-              <p className="text-center text-3xl uppercase">
-                {format(parse(currentMonth, "MMMM-yyyy", new Date()), "yyyy")}
-              </p>
-              <button onClick={nextYear} className="pb-2 text-4xl font-bold">
+              <button onClick={nextMonth} className="pb-2 text-3xl font-bold">
                 {">"}
               </button>
             </div>
-            <ol className="grid grid-cols-12 items-center justify-center">
-              {eachMonthOfInterval({
-                start: startOfYear(days[1] as Date),
-                end: endOfYear(days[10] as Date),
-              }).map((month, index) => (
-                <li
-                  key={month.toString()}
-                  className="text-2xl uppercase hover:bg-blue-300"
-                >
-                  <button
-                    onClick={() => changeMonth(index + 1)}
-                    className={`block w-full pl-2 
-                  ${
-                    getMonth(firstDayCurrentMonth) === index && "bg-[#ffd803]"
-                  } `}
-                  >
-                    {format(month, "MMM")}
-                  </button>
-                </li>
-              ))}
-            </ol>
           </div>
         </header>
-        <main className="mb-4 grid grid-cols-[300px_auto] bg-[#272343]">
-          <div className="flex items-center justify-start pl-2 align-middle">
-            <h2 className="text-3xl uppercase text-[#fffffe]">Habit</h2>
+        <main className="flex w-full flex-row bg-black py-0.5 text-white">
+          <div className="flex basis-1/4 items-center justify-start pl-4 align-middle">
+            <h2 className="text-3xl uppercase ">Habit</h2>
           </div>
-          <section className=" ">
+          <section className="basis-3/4">
             <ol className={`grid ${gridOfTheMonth(currentMonth)} `}>
               {days.map((day) => (
                 <li
                   key={day.toString()}
                   className={`${
-                    isToday(day) && "bg-[#ffd803]"
-                  } text-center uppercase`}
+                    isToday(day) && "bg-[#ffd803] text-black"
+                  } text-center font-semibold uppercase`}
                 >
                   <div
-                    className={`grid grid-cols-1 text-sm text-[#fffffe] ${
-                      isSunday(day) && "bg-rose-600"
+                    className={`grid grid-cols-1 text-sm ${
+                      isSunday(day) ? "text-rose-600" : ""
                     }`}
                   >
                     <time dateTime={format(day, "yyyy-MM-dd")}>
@@ -163,19 +121,22 @@ const HabitTracker = () => {
             </ol>
           </section>
         </main>
-        <article className=" ">
+        <article>
           <ul>
             {habits.data?.map((habit) => (
-              <li key={habit.id} className="mb-2 w-full bg-[#e3f6f5] shadow">
-                <div className="grid grid-cols-[300px_auto]">
+              <li
+                key={habit.id}
+                className="w-full border-b-[0.5px] border-gray-300"
+              >
+                <div className="flex flex-row">
                   <HabitTitle {...habit} />
 
-                  <section>
+                  <section className="flex-grow">
                     <HabitRecords
                       days={days}
                       key={habit.id}
                       month={currentMonth}
-                      demoHabitId={habit.id}
+                      habitId={habit.id}
                     />
                   </section>
                 </div>
@@ -201,58 +162,20 @@ const HabitTracker = () => {
   );
 };
 
-interface HabitTitleProps {
-  id: string;
-  title: string;
-  filterId: string;
-}
-const HabitTitle = ({ title, id, filterId }: HabitTitleProps) => {
+const HabitTitle = ({ id, title, filterId, userId }: Habit) => {
   const [showForm, setShowForm] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
+  const [newTitle, setNewTitle] = useState(title ?? "");
 
   const utils = trpc.useContext();
-  const deleteHabit = trpc.demo.deleteHabit.useMutation({
-    async onMutate(deleteHabit) {
-      await utils.demo.getHabits.cancel();
-
-      const prevHabits = utils.demo.getHabits.getData();
-
-      utils.demo.getHabits.setData(
-        prevHabits?.filter((habit) => habit.id !== deleteHabit.id)
-      );
-
-      return { prevHabits };
-    },
-    onError(error, variables, context) {
-      utils.demo.getHabits.setData(context?.prevHabits);
-    },
+  const deleteHabit = trpc.habits.delete.useMutation({
     onSettled() {
-      utils.demo.getHabits.invalidate();
+      utils.habits.getAll.invalidate();
     },
   });
 
-  const updateHabit = trpc.demo.updateHabit.useMutation({
-    async onMutate(updateHabit) {
-      await utils.demo.getHabits.cancel();
-
-      const prevHabits = utils.demo.getHabits.getData();
-
-      utils.demo.getHabits.setData(
-        prevHabits?.filter((habit) => {
-          if (habit.id === updateHabit.id) {
-            return updateHabit;
-          }
-          return habit;
-        })
-      );
-
-      return { prevHabits };
-    },
-    onError(error, variables, context) {
-      utils.demo.getHabits.setData(context?.prevHabits);
-    },
+  const updateHabit = trpc.habits.update.useMutation({
     onSettled() {
-      utils.demo.getHabits.invalidate();
+      utils.habits.getAll.invalidate();
     },
   });
 
@@ -264,7 +187,12 @@ const HabitTitle = ({ title, id, filterId }: HabitTitleProps) => {
     if (newTitle === "") {
       return setShowForm(false);
     }
-    updateHabit.mutate({ id, title: newTitle, filterId });
+    updateHabit.mutate({
+      id,
+      filterId,
+      title: newTitle,
+      userId: userId as string,
+    });
     setNewTitle("");
     setShowForm(false);
   }
@@ -273,14 +201,15 @@ const HabitTitle = ({ title, id, filterId }: HabitTitleProps) => {
     return (
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-[1fr_auto_auto] bg-white"
+        className="grid basis-1/4 grid-cols-[1fr_auto_auto] justify-between pl-4 
+        font-semibold hover:bg-[#bae8e8]"
       >
         <input
           type="text"
           onChange={(e) => setNewTitle(e.target.value)}
           value={newTitle}
           placeholder="Habit Title"
-          className="pl-2 focus:rounded-none"
+          className="pl-4 focus:rounded-none"
         />
 
         <button
@@ -328,10 +257,10 @@ const HabitTitle = ({ title, id, filterId }: HabitTitleProps) => {
 
   return (
     <div
-      className="grid grid-cols-[1fr_auto_auto] justify-between pl-2 
-    font-semibold hover:bg-[#bae8e8]"
+      className="grid basis-1/4 grid-cols-[1fr_auto_auto] justify-between pl-4 
+    font-semibold hover:bg-[#bae8e8] border-r"
     >
-      <p className="uppercase text-[#272343]">{title}</p>
+      <p className="text-[#272343]">{title}</p>
       <button
         onClick={() => setShowForm(true)}
         className="text-[#2d334a] hover:bg-green-100 hover:text-green-500"
@@ -384,24 +313,9 @@ const AddHabit = ({ index, userId }: { index: string; userId: string }) => {
   const [title, setTitle] = useState("");
 
   const utils = trpc.useContext();
-  const createHabit = trpc.habits.createHabit.useMutation({
-    // async onMutate(newHabit) {
-    //   await utils.habits.getHabits.cancel();
-
-    //   const prevHabits = utils.habits.getHabits.getData();
-
-    //   utils.habits.getHabits.setData([
-    //     ...(prevHabits as Habit[]),
-    //     { id: index, ...newHabit },
-    //   ]);
-
-    //   return { prevHabits };
-    // },
-    // onError(error, variables, context) {
-    //   utils.habits.getHabits.setData(context?.prevHabits);
-    // },
+  const createHabit = trpc.habits.create.useMutation({
     onSettled() {
-      utils.habits.getHabits.invalidate();
+      utils.habits.getAll.invalidate();
     },
   });
 
@@ -424,7 +338,7 @@ const AddHabit = ({ index, userId }: { index: string; userId: string }) => {
               onChange={(e) => setTitle(e.target.value)}
               value={title}
               placeholder="Habit Title"
-              className="pl-2 focus:rounded-none"
+              className="pl-4 focus:rounded-none"
             />
             <button
               type="submit"
@@ -469,33 +383,33 @@ const AddHabit = ({ index, userId }: { index: string; userId: string }) => {
 };
 
 interface HabitRecordsProps {
-  demoHabitId: string;
+  habitId: string;
   month: string;
   days: Date[];
 }
-const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
+const HabitRecords = ({ habitId, month, days }: HabitRecordsProps) => {
   // Query and Mutation
   const utils = trpc.useContext();
 
-  const { data: records } = trpc.demo.getRecords.useQuery({
+  const { data: records } = trpc.habits.getRecords.useQuery({
     month,
-    demoHabitId,
+    habitId,
   });
 
-  const createRecord = trpc.demo.createRecord.useMutation({
+  const createRecord = trpc.habits.createRecord.useMutation({
     onSettled() {
-      utils.demo.getRecords.invalidate({ month, demoHabitId });
+      utils.habits.getRecords.invalidate({ month, habitId });
     },
   });
 
-  const updateRecord = trpc.demo.updateRecord.useMutation({
+  const updateRecord = trpc.habits.updateRecord.useMutation({
     onSettled() {
-      utils.demo.getRecords.invalidate({ month, demoHabitId });
+      utils.habits.getRecords.invalidate({ month, habitId });
     },
   });
 
   // Creating new Data
-  const newRecords: DemoRecord[] = [];
+  const newRecords: Record[] = [];
 
   for (let index = 0; index < days.length; index++) {
     const objIndex = records?.findIndex(
@@ -507,7 +421,7 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
         month,
         date: records?.[objIndex as number]?.date as string,
         value: records?.[objIndex as number]?.value as string,
-        demoHabitId,
+        habitId,
       });
     } else {
       newRecords.push({
@@ -515,7 +429,7 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
         month,
         date: format(days[index] as Date, "d"),
         value: "0",
-        demoHabitId,
+        habitId,
       });
     }
   }
@@ -523,9 +437,9 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
   // Event action
   const handleClick = async (id: string, date: string, value: string) => {
     if (id.length > 4) {
-      updateRecord.mutate({ id, month, demoHabitId, date, value });
+      updateRecord.mutate({ id, month, habitId, date, value });
     }
-    createRecord.mutate({ month, demoHabitId, date, value });
+    createRecord.mutate({ month, habitId, date, value });
   };
 
   function updateValues(value: string) {
@@ -535,53 +449,23 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
 
   const component = newRecords?.map(({ id, value, date }, index) => (
     <li
-      key={id ?? index}
+      key={date}
       className={`${
         isToday(days?.[index] as Date) && "bg-yellow-200"
-      } text-center hover:bg-blue-400`}
+      } border-r-[0.5px] border-gray-200 text-center hover:bg-blue-400`}
     >
       <button
         type="button"
-        className="w-full "
+        className="w-full"
         onClick={() => handleClick(id, date, updateValues(value))}
         disabled={createRecord.isLoading || updateRecord.isLoading}
       >
-        {value === "1" ? "⭐" : <span className="opacity-0">{id}</span>}
+        {value === "1" ? "⭐" : <span className="opacity-0">{date}</span>}
       </button>
     </li>
   ));
 
-  return (
-    <Suspense fallback={<Loading month={month} days={days} />}>
-      <ol className={`grid ${gridOfTheMonth(month)}`}>{component}</ol>
-    </Suspense>
-  );
-};
-
-interface LoadingProps {
-  month: string;
-  days: Date[];
-}
-const Loading = ({ month, days }: LoadingProps) => {
-  return (
-    <ol className={`grid ${gridOfTheMonth(month)}`}>
-      {days.map((day) => (
-        <li
-          key={day.toString()}
-          className={`${
-            isToday(day) && "bg-[#ffd803]"
-          } animate-pulse text-center hover:bg-blue-400`}
-        >
-          <button
-            type="button"
-            className="w-full border-b border-r border-black"
-          >
-            <span className="opacity-0">x</span>
-          </button>
-        </li>
-      ))}
-    </ol>
-  );
+  return <ol className={`grid ${gridOfTheMonth(month)}`}>{component}</ol>;
 };
 
 export default HabitTracker;

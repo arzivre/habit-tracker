@@ -22,7 +22,7 @@ Open source habit tracker app that helps you to build good habits, reach your go
 
 ## Demo
 
-https://oss-habit-tracker.vercel.app
+https://improve-everyday.vercel.app
 
 
 ## Run Locally

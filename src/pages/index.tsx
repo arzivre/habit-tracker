@@ -1,19 +1,28 @@
 import type { DemoHabit, DemoRecord } from "@prisma/client";
 import {
   add,
-  eachDayOfInterval, endOfMonth, format, isSunday,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  isSunday,
   isToday,
   parse,
-  startOfToday
+  startOfToday,
 } from "date-fns";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
-import { Suspense, useState } from "react";
+import { useRouter } from "next/router";
+import { Suspense, useEffect, useState } from "react";
 import { FullScreenLoader } from "../components/Loader";
 import { gridOfTheMonth } from "../utils/style";
 import { trpc } from "../utils/trpc";
 
 const Home = () => {
+  const { status } = useSession();
+
   const habits = trpc.demo.getHabits.useQuery();
+
+  const router = useRouter();
 
   const today = startOfToday();
 
@@ -53,6 +62,12 @@ const Home = () => {
   //   firstDayNextMonth = add(firstDayCurrentMonth, { months: month });
   //   setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   // }
+
+  useEffect(() => {
+    if (status === "authenticated" && process.env.NODE_ENV === "production") {
+      router.push("/habit-tracker");
+    }
+  }, [router, status]);
 
   if (habits.isLoading) {
     return <FullScreenLoader />;
@@ -137,14 +152,14 @@ const Home = () => {
             </ol>
           </section>
         </main>
-        <article className=" ">
+        <article>
           <ul>
             {habits.data?.map((habit) => (
               <li
                 key={habit.id}
-                className="w-full border-b-[0.5px]  border-gray-300"
+                className="w-full border-b-[0.5px] border-gray-300"
               >
-                <div className="flex flex-row ">
+                <div className="flex flex-row">
                   <HabitTitle {...habit} />
 
                   <section className="flex-grow">
@@ -525,37 +540,7 @@ const HabitRecords = ({ demoHabitId, month, days }: HabitRecordsProps) => {
     </li>
   ));
 
-  return (
-    <Suspense fallback={<Loading month={month} days={days} />}>
-      <ol className={`grid ${gridOfTheMonth(month)}`}>{component}</ol>
-    </Suspense>
-  );
-};
-
-interface LoadingProps {
-  month: string;
-  days: Date[];
-}
-const Loading = ({ month, days }: LoadingProps) => {
-  return (
-    <ol className={`grid ${gridOfTheMonth(month)}`}>
-      {days.map((day) => (
-        <li
-          key={day.toString()}
-          className={`${
-            isToday(day) && "bg-[#ffd803]"
-          } animate-pulse text-center hover:bg-blue-400`}
-        >
-          <button
-            type="button"
-            className="w-full border-b border-r border-black"
-          >
-            <span className="opacity-0">x</span>
-          </button>
-        </li>
-      ))}
-    </ol>
-  );
+  return <ol className={`grid ${gridOfTheMonth(month)}`}>{component}</ol>;
 };
 
 export default Home;
