@@ -1,4 +1,4 @@
-import type { DemoRecord, Habit, Record } from "@prisma/client";
+import type { Habit, Record } from "@prisma/client";
 import {
   add,
   eachDayOfInterval,
@@ -7,11 +7,11 @@ import {
   isSunday,
   isToday,
   parse,
-  startOfToday,
+  startOfToday
 } from "date-fns";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { FullScreenLoader } from "../../components/Loader";
 import { gridOfTheMonth } from "../../utils/style";
 import { trpc } from "../../utils/trpc";

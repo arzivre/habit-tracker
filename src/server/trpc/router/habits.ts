@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { protectedProcedure, router } from "../trpc";
 
 export const HabitTrackerRouter = router({
   getAll: protectedProcedure
