@@ -7,11 +7,12 @@ import {
   isSunday,
   isToday,
   parse,
-  startOfToday
+  startOfToday,
 } from "date-fns";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { FullScreenLoader } from "../../components/Loader";
 import { gridOfTheMonth } from "../../utils/style";
 import { trpc } from "../../utils/trpc";
@@ -23,6 +24,8 @@ const HabitTracker = () => {
     { userId: sessionData?.user?.id as string },
     { enabled: sessionData?.user !== undefined }
   );
+
+  const router = useRouter();
 
   const today = startOfToday();
 
@@ -45,9 +48,11 @@ const HabitTracker = () => {
     setCurrentMonth(format(firstDayNextMonth, "MMMM-yyyy"));
   }
 
-  if (status === "unauthenticated") {
-    return <p>Access Denied</p>;
-  }
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
 
   if (habits.isLoading || status === "loading") {
     return <FullScreenLoader />;
@@ -257,8 +262,8 @@ const HabitTitle = ({ id, title, filterId, userId }: Habit) => {
 
   return (
     <div
-      className="grid basis-1/4 grid-cols-[1fr_auto_auto] justify-between pl-4 
-    font-semibold hover:bg-[#bae8e8] border-r"
+      className="grid basis-1/4 grid-cols-[1fr_auto_auto] justify-between border-r 
+    pl-4 font-semibold hover:bg-[#bae8e8]"
     >
       <p className="text-[#272343]">{title}</p>
       <button
