@@ -7,12 +7,12 @@ import {
   isSunday,
   isToday,
   parse,
-  startOfToday,
+  startOfToday
 } from "date-fns";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FullScreenLoader } from "../components/Loader";
 import { gridOfTheMonth } from "../utils/style";
 import { trpc } from "../utils/trpc";
