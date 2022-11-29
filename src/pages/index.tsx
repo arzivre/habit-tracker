@@ -93,7 +93,7 @@ const Home = () => {
           </p>
           <p className="text-black">
             <span className="font-bold">&nbsp;Sign in&nbsp;</span> to save your
-            data (Coming soon)
+            data
           </p>
         </div>
         <header className="mb-4 flex flex-row pt-4">
