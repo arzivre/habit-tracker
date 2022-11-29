@@ -44,7 +44,14 @@ const NavMenu = ({ sessionData }: { sessionData?: Session }) => {
 
 const Avatar = ({ sessionData }: { sessionData?: Session }) => {
   if (!sessionData) {
-    return <button onClick={() => signIn()}>Sign In</button>;
+    return (
+      <button
+        onClick={() => signIn()}
+        className="rounded bg-green-100 px-2 py-0.5 hover:bg-green-300"
+      >
+        <p className="text-green-600 hover:text-green-900">Sign In</p>
+      </button>
+    );
   }
 
   return (
