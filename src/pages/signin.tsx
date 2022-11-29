@@ -26,6 +26,7 @@ const Signin = () => {
       >
         {sessionData ? "Sign out" : "Sign in"}
       </button>
+      By clicking Log In, you agree to our Terms of Service and Privacy Policy.
     </div>
   );
 };
